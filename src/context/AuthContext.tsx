@@ -15,6 +15,7 @@ interface AuthContextType {
   isAgent: boolean;
   isModerator: boolean;
   loading: boolean;
+  profileLoading: boolean;
   logout: () => Promise<void>;
 }
 
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   isAgent: false,
   isModerator: false,
   loading: true,
+  profileLoading: false,
   logout: async () => {},
 });
 
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(lastKnownUser);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(!authWasInitialized);
+  const [profileLoading, setProfileLoading] = useState(false);
   const dispatch = useDispatch();
 
   // Derived role booleans
@@ -63,6 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (firebaseUser) {
         console.log("Auth State Changed : Logged in", firebaseUser.uid);
+        setProfileLoading(true);
         
         try {
           // Initial Redux sync
@@ -107,6 +111,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } catch (error) {
           console.error("Unexpected error during auth sync:", error);
+        } finally {
+          setProfileLoading(false);
         }
       } else {
         console.log("Auth State Changed : Logged Out");
@@ -129,6 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isAgent,
       isModerator,
       loading, 
+      profileLoading,
       logout 
     }}>
       {/* 
