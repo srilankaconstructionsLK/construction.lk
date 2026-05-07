@@ -113,10 +113,10 @@ export default function AdminSidebar({
               />
             </div>
           ) : (
-            <div className="relative w-10 h-10 overflow-hidden">
+            <div className="relative w-8 h-8 overflow-hidden">
               <Image 
-                src="/logo.webp" 
-                alt="Construction.lk Logo" 
+                src="/icon-only.png" 
+                alt="Construction.lk Icon" 
                 fill
                 className="object-contain"
               />

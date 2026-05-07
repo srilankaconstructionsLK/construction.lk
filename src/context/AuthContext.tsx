@@ -9,100 +9,132 @@ import { setUser as setReduxUser, clearUser, setLoading as setReduxLoading } fro
 
 interface AuthContextType {
   user: User | null;
+  currentUser: User | null;
   profile: UserProfile | null;
-  loading: boolean;
-  profileLoading: boolean;
   isAdmin: boolean;
+  isAgent: boolean;
+  isModerator: boolean;
+  loading: boolean;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  currentUser: null,
   profile: null,
-  loading: true,
-  profileLoading: false,
   isAdmin: false,
+  isAgent: false,
+  isModerator: false,
+  loading: true,
+  logout: async () => {},
 });
 
+// Module-level variable to persist initialization state across client-side navigations
+let authWasInitialized = false;
+let lastKnownUser: User | null = null;
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(lastKnownUser);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [loading, setLoading] = useState(!authWasInitialized);
   const dispatch = useDispatch();
 
+  // Derived role booleans
   const isAdmin = profile?.roles?.includes('admin') || false;
+  const isAgent = profile?.roles?.includes('agent') || false;
+  const isModerator = profile?.roles?.includes('moderator') || false;
+
+  const logout = async () => {
+    try {
+      await AuthService.logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   useEffect(() => {
-    // Initial loading state for Firebase Auth
     const unsubscribe = AuthService.onAuthStateChange(async (firebaseUser) => {
       setUser(firebaseUser);
+      lastKnownUser = firebaseUser;
       
-      // Immediately stop auth loading so UI can show something
-      if (!firebaseUser) {
-        setLoading(false);
-        setProfile(null);
-        dispatch(clearUser());
-        dispatch(setReduxLoading(false));
-        return;
-      }
-
-      // If we have a user, start profile sync in background
-      setProfileLoading(true);
-      // We set loading to false here so the header is visible while profile syncs
-      setLoading(false); 
+      // Stop initial UI blocking IMMEDIATELY
+      setLoading(false);
+      authWasInitialized = true;
       
-      try {
-        // Sync Redux immediately with available info
-        dispatch(setReduxUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-        }));
-
-        // 1. Wait for custom claims (blocking functions to finish)
-        await AuthService.waitForClaims(firebaseUser);
-
-        // 2. Sync with Supabase Profile
-        let userData: UserProfile | null = null;
+      if (firebaseUser) {
+        console.log("Auth State Changed : Logged in", firebaseUser.uid);
+        
         try {
-          userData = await UserService.getProfileById(firebaseUser.uid);
-        } catch (e: any) {
-          console.log("Supabase profile not found, creating one...");
-          try {
-            userData = await UserService.createProfile({
-              id: firebaseUser.uid,
-              email: firebaseUser.email,
-              name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-              roles: ["user"],
-            });
-          } catch (createError) {
-            console.error("Failed to create Supabase profile:", createError);
-          }
-        }
-
-        if (userData) {
-          setProfile(userData);
+          // Initial Redux sync
           dispatch(setReduxUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
-            displayName: firebaseUser.displayName || userData.name,
-            photoURL: firebaseUser.photoURL || userData.profile_picture_url || null,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
           }));
+
+          // 1. Wait for custom claims (blocking functions)
+          await AuthService.waitForClaims(firebaseUser);
+
+          // 2. Sync with Supabase Profile
+          let userData: UserProfile | null = null;
+          try {
+            userData = await UserService.getProfileById(firebaseUser.uid);
+            console.log("Fetched Supabase Profile:", userData);
+          } catch (e: any) {
+            console.log("User profile not found, creating new one...");
+            try {
+              userData = await UserService.createProfile({
+                id: firebaseUser.uid,
+                email: firebaseUser.email,
+                name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
+                roles: ["user"],
+              });
+              console.log("Created new profile:", userData);
+            } catch (createError) {
+              console.error("Failed to create user profile:", createError);
+            }
+          }
+
+          if (userData) {
+            setProfile(userData);
+            dispatch(setReduxUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName || userData.name,
+              photoURL: firebaseUser.photoURL || userData.profile_picture_url || null,
+            }));
+          }
+        } catch (error) {
+          console.error("Unexpected error during auth sync:", error);
         }
-      } catch (error) {
-        console.error("Profile sync error:", error);
-      } finally {
-        setProfileLoading(false);
-        dispatch(setReduxLoading(false));
+      } else {
+        console.log("Auth State Changed : Logged Out");
+        setProfile(null);
+        dispatch(clearUser());
       }
+      
+      dispatch(setReduxLoading(false));
     });
 
     return () => unsubscribe();
   }, [dispatch]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, profileLoading, isAdmin }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      currentUser: user,
+      profile, 
+      isAdmin, 
+      isAgent,
+      isModerator,
+      loading, 
+      logout 
+    }}>
+      {/* 
+        We show children even during loading to prevent the "white screen" or "empty header" 
+        on navigation, but SiteFrame handles the loading UI for auth-specific elements.
+      */}
       {children}
     </AuthContext.Provider>
   );
