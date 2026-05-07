@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Search, MapPin, User, MessageSquare, Bell, ChevronDown, Menu } from "lucide-react";
+import { Search, MapPin, User, MessageSquare, Bell, ChevronDown, Menu, LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ReactNode } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { AuthService } from "@/services/AuthService";
 
 interface SiteFrameProps {
   children: ReactNode;
@@ -15,6 +17,7 @@ interface SiteFrameProps {
 
 export function SiteFrame({ children, active }: SiteFrameProps) {
   const pathname = usePathname();
+  const { user, profile, loading, profileLoading } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
@@ -53,27 +56,76 @@ export function SiteFrame({ children, active }: SiteFrameProps) {
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center gap-4 lg:gap-8">
-            <div className="hidden xl:flex items-center gap-6">
-              <Link href="/login" className="text-xs font-bold uppercase tracking-widest text-secondary hover:text-primary-container transition-colors">
-                Sign In
-              </Link>
-              <Link href="/register">
-                <Button variant="outline" className="border-primary-container text-primary-container hover:bg-primary-container hover:text-white font-bold h-10 px-6 rounded-md">
-                  Join Network
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col items-center cursor-pointer group relative p-2 rounded-md hover:bg-surface-container transition-colors">
-                <MessageSquare className="w-5 h-5 text-secondary group-hover:text-primary-container transition-colors" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-container text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white font-extrabold shadow-sm">2</span>
+          <div className="flex items-center gap-4 lg:gap-8 min-w-[200px] justify-end">
+            {loading ? (
+              <div className="flex items-center gap-2 text-secondary/30 text-[10px] font-bold uppercase tracking-widest">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Initializing...</span>
               </div>
-              <Button variant="ghost" size="icon" className="md:hidden text-secondary">
-                <Menu className="w-7 h-7" />
-              </Button>
-            </div>
+            ) : user ? (
+              <div className="flex items-center gap-4">
+                {/* Notifications & Messages */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="cursor-pointer group p-2 rounded-md hover:bg-surface-container transition-colors">
+                    <Bell className="w-5 h-5 text-secondary group-hover:text-primary-container transition-colors" />
+                  </div>
+                  <div className="cursor-pointer group relative p-2 rounded-md hover:bg-surface-container transition-colors">
+                    <MessageSquare className="w-5 h-5 text-secondary group-hover:text-primary-container transition-colors" />
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-container text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white font-extrabold shadow-sm">2</span>
+                  </div>
+                </div>
+
+                {/* User Profile */}
+                <div className="flex items-center gap-3 pl-4 border-l border-surface-variant">
+                  <div className="text-right hidden lg:block">
+                    <p className="text-[11px] font-extrabold text-secondary uppercase tracking-tight leading-none">
+                      {profile?.name || user.displayName || 'User'}
+                    </p>
+                    <p className="text-[9px] font-bold text-secondary/40 uppercase tracking-widest mt-1">
+                      {profileLoading ? 'Syncing...' : (profile?.roles?.[0] || 'Member')}
+                    </p>
+                  </div>
+                  <div className="relative w-10 h-10 rounded-md overflow-hidden border-2 border-surface-variant group cursor-pointer transition-all hover:border-primary-container">
+                    {user.photoURL || profile?.profile_picture_url ? (
+                      <Image 
+                        src={user.photoURL || profile?.profile_picture_url || ''} 
+                        alt="User Profile" 
+                        fill 
+                        className="object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-secondary flex items-center justify-center text-white text-sm font-bold">
+                        {user.email?.[0].toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="w-8 h-8 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    onClick={() => AuthService.logout()}
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-6">
+                <Link href="/login" className="text-xs font-bold uppercase tracking-widest text-secondary hover:text-primary-container transition-colors">
+                  Sign In
+                </Link>
+                <Link href="/register" className="hidden sm:block">
+                  <Button variant="outline" className="border-primary-container text-primary-container hover:bg-primary-container hover:text-white font-bold h-10 px-6 rounded-md transition-all">
+                    Join Network
+                  </Button>
+                </Link>
+              </div>
+            )}
+            
+            <Button variant="ghost" size="icon" className="md:hidden text-secondary">
+              <Menu className="w-7 h-7" />
+            </Button>
           </div>
         </div>
       </header>

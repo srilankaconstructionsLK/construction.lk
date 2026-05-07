@@ -7,9 +7,9 @@ import {
   onAuthStateChanged,
   User,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  IdTokenResult
 } from 'firebase/auth';
-import { createClient } from '@/lib/supabase/client';
 
 export class AuthService {
   /**
@@ -27,6 +27,26 @@ export class AuthService {
   }
 
   /**
+   * Wait for custom claims to be populated by Cloud Functions
+   * This is critical for Supabase RLS to recognize the 'authenticated' role.
+   */
+  static async waitForClaims(user: User, maxAttempts = 10): Promise<IdTokenResult> {
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+      // Force refresh the token to get new claims
+      const tokenResult = await user.getIdTokenResult(true);
+      if (tokenResult.claims.role === 'authenticated') {
+        return tokenResult;
+      }
+      // Wait 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      attempts++;
+    }
+    console.warn("Timeout waiting for 'authenticated' claim. RLS might fail.");
+    return await user.getIdTokenResult();
+  }
+
+  /**
    * Sign in with Firebase
    */
   static async login(email: string, password: string) {
@@ -39,7 +59,7 @@ export class AuthService {
   }
 
   /**
-   * Sign up with Firebase and create Supabase profile
+   * Sign up with Firebase
    */
   static async register(email: string, password: string, fullName: string) {
     try {
@@ -48,23 +68,6 @@ export class AuthService {
 
       // Update Firebase Profile
       await updateProfile(user, { displayName: fullName });
-
-      // Get ID Token for Supabase
-      const idToken = await user.getIdToken();
-      const supabase = createClient(idToken);
-
-      // Create entry in Supabase 'profiles' table
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: user.uid,
-        email: email,
-        name: fullName,
-      });
-
-      if (profileError) {
-        console.error("Supabase Profile Sync Error:", profileError);
-        // We don't throw here to avoid blocking registration if Supabase fails, 
-        // but in production, we might want a retry logic or strict failure.
-      }
 
       return user;
     } catch (error: any) {
@@ -79,24 +82,7 @@ export class AuthService {
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
-
-      // Ensure profile exists in Supabase
-      const idToken = await user.getIdToken();
-      const supabase = createClient(idToken);
-
-      // We use upsert here because the user might already exist
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: user.uid,
-        email: user.email,
-        name: user.displayName,
-      });
-
-      if (profileError) {
-        console.error("Supabase Profile Sync Error (Google):", profileError);
-      }
-
-      return user;
+      return userCredential.user;
     } catch (error: any) {
       throw new Error(this.formatError(error.code));
     }
@@ -122,6 +108,8 @@ export class AuthService {
         return 'This email is already registered.';
       case 'auth/weak-password':
         return 'Security key is too weak.';
+      case 'auth/popup-closed-by-user':
+        return 'Login cancelled.';
       default:
         return 'Authentication failed. Please try again.';
     }
