@@ -1,0 +1,203 @@
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#9a4600",
+                    "primary-container": "#f47a20",
+                    "primary-fixed": "#ffdbc9",
+                    "background": "#f8f9fa",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#ffb68c",
+                    "on-tertiary-fixed": "#161d15",
+                    "tertiary-fixed-dim": "#c1c9bc",
+                    "on-background": "#191c1d",
+                    "primary-fixed-dim": "#ffb68c",
+                    "on-tertiary-fixed-variant": "#41493f",
+                    "surface-container-high": "#e7e8e9",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-variant": "#e1e3e4",
+                    "on-primary-fixed": "#321200",
+                    "surface-container-highest": "#e1e3e4",
+                    "surface-container": "#edeeef",
+                    "on-secondary-fixed": "#0e1d25",
+                    "on-tertiary-container": "#2f362d",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#3a4951",
+                    "surface-container-low": "#f3f4f5",
+                    "on-surface": "#191c1d",
+                    "secondary-container": "#d2e2ec",
+                    "on-primary-fixed-variant": "#753400",
+                    "on-secondary-container": "#55656d",
+                    "surface": "#f8f9fa",
+                    "tertiary": "#596156",
+                    "inverse-surface": "#2e3132",
+                    "on-surface-variant": "#574237",
+                    "on-primary-container": "#582500",
+                    "surface-tint": "#9a4600",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-bright": "#f8f9fa",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#979f93",
+                    "tertiary-fixed": "#dde5d8",
+                    "secondary-fixed": "#d5e5ef",
+                    "outline-variant": "#dec1b1",
+                    "surface-dim": "#d9dadb",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "secondary": "#516169",
+                    "secondary-fixed-dim": "#b9c9d3",
+                    "outline": "#8b7265"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "gutter": "24px",
+                    "margin": "32px",
+                    "stack-md": "24px",
+                    "stack-sm": "12px",
+                    "stack-lg": "48px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Manrope"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "label-bold": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.1", "fontWeight": "800"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "label-bold": ["14px", {"lineHeight": "1.2", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-hidden">
+<!-- TopAppBar Shell (Suppressed Nav, Show Brand Only) -->
+<header class="absolute top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-6">
+<div class="font-manrope antialiased text-xl font-bold text-slate-900">
+            BuildPro B2B
+        </div>
+<div class="flex items-center gap-6">
+<span class="text-slate-500 text-sm font-manrope">Already have an account?</span>
+<button class="text-[#F47A20] font-bold font-manrope hover:text-[#9a4600] transition-colors">Log In</button>
+</div>
+</header>
+<main class="min-h-screen grid grid-cols-1 md:grid-cols-2">
+<!-- Action Side (Left) -->
+<section class="flex flex-col justify-center items-center px-8 md:px-16 lg:px-24 py-24 bg-white">
+<div class="w-full max-w-md">
+<div class="mb-10">
+<h1 class="font-headline-lg text-headline-lg text-on-background mb-2">Create Account</h1>
+<p class="font-body-md text-body-md text-secondary">Join the industrial supply network.</p>
+</div>
+<!-- Form -->
+<form class="flex flex-col gap-6" onsubmit="return false;">
+<div class="flex flex-col gap-2">
+<label class="font-label-bold text-label-bold text-on-surface" for="full_name">Full Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-[20px]">person</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:ring-0 focus:border-primary-container outline-none transition-colors font-body-md text-body-md" id="full_name" placeholder="John Doe" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-bold text-label-bold text-on-surface" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-[20px]">mail</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:ring-0 focus:border-primary-container outline-none transition-colors font-body-md text-body-md" id="email" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-bold text-label-bold text-on-surface" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-[20px]">lock</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:ring-0 focus:border-primary-container outline-none transition-colors font-body-md text-body-md" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<button class="w-full py-4 bg-primary-container hover:bg-primary transition-colors text-white font-headline-md text-[18px] rounded-lg shadow-sm">
+                        Sign Up
+                    </button>
+</form>
+<div class="relative my-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-label-sm">
+<span class="px-4 bg-white text-secondary uppercase tracking-wider">Or continue with</span>
+</div>
+</div>
+<!-- Social & Alternate Logins -->
+<div class="flex flex-col gap-4">
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 px-4 py-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDALIg3J8_svfJfL4VNPEFKnasV8PiYvO6tPYCT5HRDWl4yLDSoCszg-TR4UTANqjwHtZQmj8DY2mWoKwlGfEwG3AX9XHpyVHzDdXwoKaIFfwbjIgPtyfJVOHVwkaDrPNf0SfpKGYC7BnZn_uuFDEXNeoYQHJxFJwAuApRGrJiJuxR0ofs1NXLn6CFWPXAeHo1v43xa6exs1x2-0X_ihiMbUSnd3cgrxXFnLBnKQ6tF7-7Ma7pU8Ds9nFfzhr_yVZMprCiwm_c1wio"/>
+<span class="font-label-bold text-on-surface">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 px-4 py-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all">
+<img alt="Facebook" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOfuOcbBSJ_t5J2larCNTR10NAA51fsmMiRCc-h4REY-wxExXkdH5-wRLPv4E9eK93oW-SQyduo4VkRRNx7-RJmSSGyPCEYREhkGIT7JE4SZEPlCGUaPtBKqXN7EaFJxTqhMQs9EDhbweAYt0QkZ1g50naUkK8WgrPIIRtm5XuAY8-AoDhDISaqzKw8dlwYGr3mOweJCXqcAukvX1X16CELXr2bThcXJSJCUqiylaA6CsKIelAFSeyvVdkgfXb-Cov9Yd2y9REXY8"/>
+<span class="font-label-bold text-on-surface">Facebook</span>
+</button>
+</div>
+<button class="flex items-center justify-center gap-3 px-4 py-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-[20px]">phone_android</span>
+<span class="font-label-bold text-on-surface">Sign up with Phone</span>
+</button>
+</div>
+<p class="mt-8 text-center font-label-sm text-secondary">
+                    By signing up, you agree to our <a class="text-primary hover:underline" href="#">Terms of Service</a> and <a class="text-primary hover:underline" href="#">Privacy Policy</a>.
+                </p>
+</div>
+</section>
+<!-- Image Side (Right) -->
+<section class="hidden md:block relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10"></div>
+<img alt="Modern construction site" class="absolute inset-0 w-full h-full object-cover" data-alt="A sprawling, high-contrast construction site during the golden hour, featuring towering yellow cranes and the skeletal steel frame of a rising modern skyscraper. The scene is bathed in warm, cinematic light that catches floating dust particles, creating a sense of industrious energy and architectural precision. The color palette is dominated by slate grays, structural blacks, and vibrant safety-orange accents, aligning perfectly with a professional B2B industrial brand identity. The mood is powerful, ambitious, and grounded in engineering excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEALUQJ5wlMF2NkGApBvtt8JPlJ_C9kjOC2HMyeGl83IZgLU8dB2XFyC8lUYnAQTXdInp1_0fSc040pWG5LXro9yLXatfYoc-oO_tRVmHxbuuhzrNp7vLPPhyovjq-J4V519THF_1jR4pFL_FRX3DtfOVwfejjV2gfiJU4vMyoKdgY4AL-Pq-EZEqilqEuaHfUp6pSy1ZPpzsCA8Vcp3JCKeXbncvPIy7ZNw7dpPZE2CMXagQyNjhNZh2VQAKAGysfDwd3Ae1LL-0"/>
+<div class="absolute bottom-0 left-0 p-16 z-20 max-w-xl">
+<div class="w-12 h-1 bg-primary-container mb-6"></div>
+<h2 class="font-headline-xl text-headline-xl text-white mb-4">Precision in every project.</h2>
+<p class="font-body-lg text-body-lg text-slate-200">Connect with premium suppliers and manage your heavy industrial procurement with the industry's most trusted platform.</p>
+</div>
+</section>
+</main>
+<!-- Footer Shell (Simplified for Auth) -->
+<footer class="fixed bottom-0 right-0 w-full md:w-1/2 flex justify-center items-center py-4 px-8 z-30 pointer-events-none md:pointer-events-auto">
+<div class="flex gap-6 font-manrope text-xs text-slate-500 md:text-slate-300">
+<span class="hidden lg:inline">© 2024 BuildPro B2B Industrial. All rights reserved.</span>
+<a class="hover:underline pointer-events-auto" href="#">Privacy Policy</a>
+<a class="hover:underline pointer-events-auto" href="#">Terms of Service</a>
+<a class="hover:underline pointer-events-auto" href="#">Contact Support</a>
+</div>
+</footer>
+</body></html>
