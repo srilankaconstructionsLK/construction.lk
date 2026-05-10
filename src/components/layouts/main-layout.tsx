@@ -30,6 +30,7 @@ export function MainLayout({ children, active }: SiteFrameProps) {
   const { user, loading } = useAuth();
 
   // Navigation links logic...
+  console.log("loading ",user, loading)
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
@@ -55,12 +56,12 @@ export function MainLayout({ children, active }: SiteFrameProps) {
               <Search className="w-4 h-4 text-outline mr-3" />
               <Input
                 placeholder="Search materials, heavy gear, suppliers..."
-                className="border-none bg-transparent shadow-none focus-visible:ring-0 text-sm h-11"
+                className="border-none bg-transparent shadow-none focus-visible:ring-0 text-xs h-11"
               />
             </div>
             <div className="flex items-center px-5 border-r border-surface-variant cursor-pointer hover:bg-surface-container transition-colors h-11">
               <MapPin className="w-4 h-4 text-outline mr-2" />
-              <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+              <span className="text-[10px] font-black text-secondary uppercase tracking-[0.15em]">
                 Location
               </span>
               <ChevronDown className="w-3 h-3 ml-2 text-outline" />
@@ -126,7 +127,7 @@ export function MainLayout({ children, active }: SiteFrameProps) {
               <li key={item} className="h-full flex items-center">
                 <Link
                   href={item === "Suppliers" ? "/search" : "#"}
-                  className={`text-[13px] font-bold uppercase tracking-widest transition-all hover:text-primary-container relative h-full flex items-center ${
+                  className={`text-[11px] font-black uppercase tracking-[0.15em] transition-all hover:text-primary-container relative h-full flex items-center ${
                     item === "Suppliers" && pathname === "/search"
                       ? "text-primary-container after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-primary-container"
                       : "text-secondary"

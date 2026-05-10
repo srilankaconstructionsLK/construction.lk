@@ -68,7 +68,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           isCollapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full">
+        <main className="flex-1 p-4 md:p-5 lg:p-6 overflow-y-auto w-full">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

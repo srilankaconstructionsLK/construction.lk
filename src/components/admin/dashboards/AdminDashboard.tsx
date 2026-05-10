@@ -50,7 +50,7 @@ export const AdminDashboard = () => {
               <Cpu className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-secondary">Admin Dashboard</h1>
+              <h1 className="text-lg font-black text-secondary uppercase tracking-tight">Admin Dashboard</h1>
               <p className="text-sm text-gray-500 mt-1">
                 Monitor system performance and administrative governance.
               </p>
@@ -138,7 +138,7 @@ function StatsCard({ title, value, description, icon, statusColor = "text-second
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-2">{title}</p>
-              <h3 className={`text-2xl font-bold tracking-tight ${statusColor}`}>{value}</h3>
+              <h3 className={`text-xl font-black tracking-tight ${statusColor}`}>{value}</h3>
             </div>
             <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-100 group-hover:bg-primary/10 group-hover:border-primary/20 transition-colors">
                 {icon}

@@ -1,33 +1,31 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  UserCircle, 
-  Briefcase, 
-  Settings, 
-  LogOut, 
-  ShieldCheck, 
-  Loader2, 
-  ChevronDown,
-  UserCog
-} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { setUserRole } from "@/lib/roles";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Briefcase,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  UserCircle,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 export function UserNav() {
   const { user, profile, profileLoading, appRole, signOut } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isFixing, setIsFixing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     }
@@ -35,34 +33,19 @@ export function UserNav() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleFixPermissions = async () => {
-    if (!user) return;
-    setIsFixing(true);
-    try {
-      await setUserRole(user.uid, "customer");
-      alert("✅ Role Sync Success! Page will now refresh.");
-      window.location.reload();
-    } catch (error: any) {
-      console.error("Fix failed:", error);
-      alert("❌ Sync Failed: " + error.message);
-    } finally {
-      setIsFixing(false);
-    }
-  };
-
   const getDashboardLink = () => {
     switch (appRole) {
-      case 'super_admin':
-      case 'admin':
-        return '/admin';
-      case 'business_owner':
-        return '/admin/business';
-      case 'agent':
-        return '/admin/manage';
-      case 'moderator':
-        return '/admin/ads/manage';
+      case "super_admin":
+      case "admin":
+        return "/admin";
+      case "business_owner":
+        return "/admin/business";
+      case "agent":
+        return "/admin/manage";
+      case "moderator":
+        return "/admin/ads/manage";
       default:
-        return '/profile';
+        return "/profile";
     }
   };
 
@@ -79,7 +62,9 @@ export function UserNav() {
             {profile?.name || user.displayName || "User"}
           </p>
           <p className="text-[9px] font-bold text-secondary/40 uppercase tracking-widest mt-1">
-            {profileLoading ? "Syncing..." : (appRole || profile?.role || "Member")}
+            {profileLoading
+              ? "Syncing..."
+              : appRole || profile?.role || "Member"}
           </p>
         </div>
         <div className="relative w-10 h-10 rounded-md overflow-hidden border-2 border-surface-variant group-hover:border-primary-container transition-all">

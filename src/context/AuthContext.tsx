@@ -23,9 +23,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [appRole, setAppRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
-  
-  // ✅ Store signal unsubscribe ref so we can clean it up properly
+  const [profileLoading, setProfileLoading] = useState(true); // ✅ true by default
+
   const unsubscribeSignalRef = useRef<(() => void) | null>(null);
 
   const fetchProfile = useCallback(async (uid: string) => {
@@ -34,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await UserService.getProfileById(uid);
       setProfile(data);
     } catch (error) {
-      console.warn("[Auth] Profile not found or error fetching:", error);
+      console.warn("[Auth] Profile fetch error:", error);
       setProfile(null);
     } finally {
       setProfileLoading(false);
@@ -43,14 +42,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshAuthToken = useCallback(async (firebaseUser: User) => {
     try {
+      // Force refresh — updates cache with latest claims
       await firebaseUser.getIdToken(true);
       const decodedToken = await firebaseUser.getIdTokenResult();
       const role = (decodedToken.claims.app_role as string) || "customer";
-      
-      console.log("[Auth] Custom Claims:", decodedToken.claims);
+
+      console.log("[Auth] Claims:", decodedToken.claims);
       setAppRole(role);
-      
-      // Also trigger profile refresh when token changes (might mean role changed)
+
+      // Fetch profile after token is fresh — Supabase client will use new token
       await fetchProfile(firebaseUser.uid);
     } catch (error) {
       console.error("[Auth] Error refreshing token:", error);
@@ -59,9 +59,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log(`[Auth] State Change: ${firebaseUser ? "Login" : "Logout"}`);
-      
-      // ✅ Always clean up previous signal listener first
+      console.log(`[Auth] State: ${firebaseUser ? "Login" : "Logout"}`);
+
       if (unsubscribeSignalRef.current) {
         unsubscribeSignalRef.current();
         unsubscribeSignalRef.current = null;
@@ -72,17 +71,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await refreshAuthToken(firebaseUser);
         setLoading(false);
 
-        // ✅ Store unsubscribe in ref so it persists across renders
         unsubscribeSignalRef.current = onSnapshot(
           doc(db, "user_signals", firebaseUser.uid),
           async (snapshot) => {
             if (snapshot.exists() && snapshot.data().needsTokenRefresh) {
-              console.log("[Auth] Role change detected, refreshing token...");
+              console.log("[Auth] Role change detected, refreshing...");
               await refreshAuthToken(firebaseUser);
               try {
                 await deleteDoc(snapshot.ref);
               } catch (error) {
-                console.error("[Auth] Error deleting user signal:", error);
+                console.error("[Auth] Error deleting signal:", error);
               }
             }
           }
@@ -93,12 +91,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(null);
         setAppRole(null);
         setLoading(false);
+        setProfileLoading(false); // ✅ reset on logout
       }
     });
 
     return () => {
       unsubscribeAuth();
-      // ✅ Clean up signal listener on unmount
       if (unsubscribeSignalRef.current) {
         unsubscribeSignalRef.current();
       }
@@ -106,7 +104,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [refreshAuthToken]);
 
   const signOut = async () => {
-    // ✅ Clean up signal listener before signing out
     if (unsubscribeSignalRef.current) {
       unsubscribeSignalRef.current();
       unsubscribeSignalRef.current = null;

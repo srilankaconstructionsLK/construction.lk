@@ -140,8 +140,8 @@ export default function AdminSidebar({
       </div>
       
       <div className="flex-1 w-full overflow-y-auto">
-        <div className="flex flex-col gap-1 py-3 pl-3 pr-4">
-          <nav className="space-y-1.5">
+        <div className="flex flex-col gap-0.5 py-2 px-2">
+          <nav className="space-y-1">
             {sidebarItems.map((sidebarItem) => {
               const active = isActive(sidebarItem.to);
               return (
@@ -149,7 +149,7 @@ export default function AdminSidebar({
                   key={sidebarItem.to}
                   href={sidebarItem.to}
                   onClick={onMobileClose}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 group border ${
+                  className={`flex items-center gap-3 px-2 py-2 rounded-sm text-[11px] font-black uppercase tracking-tight transition-all duration-200 group border ${
                     active
                       ? "bg-primary text-white border-primary shadow-sm"
                       : "bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200"
@@ -173,7 +173,7 @@ export default function AdminSidebar({
             {/* Advertising Section */}
             <div className="pt-1 relative">
               <div
-                className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium cursor-pointer transition-all duration-200 select-none border ${
+                className={`flex items-center justify-between gap-3 px-2 py-2 rounded-sm text-[11px] font-black uppercase tracking-tight cursor-pointer transition-all duration-200 select-none border ${
                   isAnyAdsActive
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200"
@@ -204,7 +204,7 @@ export default function AdminSidebar({
                         key={item.to}
                         href={item.to}
                         onClick={onMobileClose}
-                        className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
+                        className={`block px-3 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-colors border ${
                           active
                             ? "bg-primary text-white border-primary"
                             : "bg-gray-50 text-gray-500 border-gray-100 hover:text-gray-900 hover:bg-gray-100 hover:border-gray-200"
