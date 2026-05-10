@@ -149,7 +149,7 @@ export default function AdminSidebar({
                   key={sidebarItem.to}
                   href={sidebarItem.to}
                   onClick={onMobileClose}
-                  className={`flex items-center gap-3 px-2 py-2 rounded-sm text-[11px] font-black uppercase tracking-tight transition-all duration-200 group border ${
+                  className={`flex items-center gap-3 px-2 py-2 rounded-sm text-[11px] font-medium uppercase tracking-wider transition-all duration-200 group border ${
                     active
                       ? "bg-primary text-white border-primary shadow-sm"
                       : "bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200"
@@ -173,7 +173,7 @@ export default function AdminSidebar({
             {/* Advertising Section */}
             <div className="pt-1 relative">
               <div
-                className={`flex items-center justify-between gap-3 px-2 py-2 rounded-sm text-[11px] font-black uppercase tracking-tight cursor-pointer transition-all duration-200 select-none border ${
+                className={`flex items-center justify-between gap-3 px-2 py-2 rounded-sm text-[11px] font-medium uppercase tracking-wider cursor-pointer transition-all duration-200 select-none border ${
                   isAnyAdsActive
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200"
@@ -204,7 +204,7 @@ export default function AdminSidebar({
                         key={item.to}
                         href={item.to}
                         onClick={onMobileClose}
-                        className={`block px-3 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-colors border ${
+                        className={`block px-3 py-1.5 rounded-sm text-[10px] font-medium uppercase tracking-widest transition-colors border ${
                           active
                             ? "bg-primary text-white border-primary"
                             : "bg-gray-50 text-gray-500 border-gray-100 hover:text-gray-900 hover:bg-gray-100 hover:border-gray-200"
@@ -230,7 +230,7 @@ export default function AdminSidebar({
         <div className="flex items-center gap-3">
           {!isCollapsed && (
             <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-gray-700 truncate">
+              <p className="text-[10px] font-bold text-secondary uppercase tracking-tight truncate">
                 Admin
               </p>
               <p className="text-[10px] text-gray-500">Logged In</p>
@@ -240,7 +240,7 @@ export default function AdminSidebar({
 
         <Link
           href="/"
-          className={`flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 ${
+          className={`flex items-center gap-3 w-full px-3 py-2 text-[12px] font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors border border-transparent hover:border-red-100 ${
             isCollapsed ? "justify-center p-2" : ""
           }`}
           title={isCollapsed ? "Sign Out" : ""}
