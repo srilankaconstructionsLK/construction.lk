@@ -2,32 +2,35 @@ import { createBrowserClient } from '@supabase/ssr';
 import { auth } from '@/lib/firebase';
 
 /**
- * Creates a Supabase client that automatically uses the Firebase ID Token for authentication.
- * This bridges Firebase Auth with Supabase RLS.
+ * Creates a Supabase client that automatically bridges Firebase Auth with Supabase RLS.
+ * The accessToken callback is called automatically before every Supabase request.
+ * Firebase caches the token for 1 hour — no unnecessary network requests.
  */
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      global: {
-        fetch: (...args) => fetch(...args),
-      },
       accessToken: async () => {
-        // Automatically fetch the latest Firebase ID token for every Supabase request
-        if (auth.currentUser) {
-          try {
-            return await auth.currentUser.getIdToken();
-          } catch (error) {
-            console.error("Error getting Firebase ID token for Supabase:", error);
-            return null;
-          }
+        try {
+          if (!auth.currentUser) return null;
+          // false = use cached token (faster), auto-refreshes only when expired
+          return await auth.currentUser.getIdToken(false);
+        } catch (error) {
+          console.error('[Supabase] Failed to get Firebase ID token:', error);
+          return null;
         }
-        return null;
       },
     }
   );
 }
 
-// Default singleton instance
+/**
+ * Singleton Supabase client for use across the app.
+ * Always use this — never create a new client in components or services.
+ *
+ * Usage:
+ *   import { supabase } from '@/lib/supabase/client';
+ *   const { data } = await supabase.from('profiles').select('*');
+ */
 export const supabase = createClient();

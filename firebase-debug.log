@@ -1,0 +1,27 @@
+[debug] [2026-05-10T09:18:42.844Z] ----------------------------------------------------------------------
+[debug] [2026-05-10T09:18:42.854Z] Command:       /home/senidu/.nvm/versions/node/v24.14.1/bin/node /home/senidu/.nvm/versions/node/v24.14.1/bin/firebase functions:log
+[debug] [2026-05-10T09:18:42.854Z] CLI Version:   15.17.0
+[debug] [2026-05-10T09:18:42.854Z] Platform:      linux
+[debug] [2026-05-10T09:18:42.854Z] Node Version:  v24.14.1
+[debug] [2026-05-10T09:18:42.855Z] Time:          Sun May 10 2026 14:48:42 GMT+0530 (India Standard Time)
+[debug] [2026-05-10T09:18:42.855Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-10T09:18:43.082Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-10T09:18:43.082Z] > authorizing via signed-in user (srilankabusinessnet@gmail.com)
+[debug] [2026-05-10T09:18:43.082Z] [iam] checking project constructionlk-73dd3 for permissions ["firebase.projects.get","logging.logEntries.list","logging.logs.list"]
+[debug] [2026-05-10T09:18:43.083Z] Checked if tokens are valid: false, expires at: 1778404028503
+[debug] [2026-05-10T09:18:43.084Z] Checked if tokens are valid: false, expires at: 1778404028503
+[debug] [2026-05-10T09:18:43.084Z] > refreshing access token with scopes: []
+[debug] [2026-05-10T09:18:43.086Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-05-10T09:18:43.086Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-10T09:18:44.480Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-05-10T09:18:44.480Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-10T09:18:44.486Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/constructionlk-73dd3:testIamPermissions [none]
+[debug] [2026-05-10T09:18:44.486Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/constructionlk-73dd3:testIamPermissions  x-goog-user-project=constructionlk-73dd3
+[debug] [2026-05-10T09:18:44.486Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/constructionlk-73dd3:testIamPermissions {"permissions":["firebase.projects.get","logging.logEntries.list","logging.logs.list"]}
+[debug] [2026-05-10T09:18:46.319Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/constructionlk-73dd3:testIamPermissions 200
+[debug] [2026-05-10T09:18:46.319Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/constructionlk-73dd3:testIamPermissions {"permissions":["firebase.projects.get","logging.logEntries.list","logging.logs.list"]}
+[debug] [2026-05-10T09:18:46.319Z] Checked if tokens are valid: true, expires at: 1778408323480
+[debug] [2026-05-10T09:18:46.320Z] Checked if tokens are valid: true, expires at: 1778408323480
+[debug] [2026-05-10T09:18:46.320Z] >>> [apiv2][query] POST https://logging.googleapis.com/v2/entries:list [none]
+[debug] [2026-05-10T09:18:46.320Z] >>> [apiv2][body] POST https://logging.googleapis.com/v2/entries:list {"resourceNames":["projects/constructionlk-73dd3"],"filter":"resource.type=\"cloud_function\" OR (resource.type=\"cloud_run_revision\" AND labels.\"goog-managed-by\"=\"cloudfunctions\")","orderBy":"timestamp desc","pageSize":35}

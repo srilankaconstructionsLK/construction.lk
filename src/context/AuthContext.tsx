@@ -1,150 +1,140 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User } from 'firebase/auth';
-import { AuthService } from '@/services/AuthService';
-import { UserService, UserProfile } from '@/services/UserService';
-import { useDispatch } from 'react-redux';
-import { setUser as setReduxUser, clearUser, setLoading as setReduxLoading } from '@/redux/slices/authSlice';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot, deleteDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { UserService, UserProfile } from "@/services/supabase/UserService";
 
 interface AuthContextType {
   user: User | null;
-  currentUser: User | null;
+  appRole: string | null;
   profile: UserProfile | null;
-  isAdmin: boolean;
-  isAgent: boolean;
-  isModerator: boolean;
   loading: boolean;
   profileLoading: boolean;
-  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  currentUser: null,
-  profile: null,
-  isAdmin: false,
-  isAgent: false,
-  isModerator: false,
-  loading: true,
-  profileLoading: false,
-  logout: async () => {},
-});
-
-// Module-level variable to persist initialization state across client-side navigations
-let authWasInitialized = false;
-let lastKnownUser: User | null = null;
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(lastKnownUser);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(!authWasInitialized);
+  const [appRole, setAppRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
-  const dispatch = useDispatch();
+  
+  // ✅ Store signal unsubscribe ref so we can clean it up properly
+  const unsubscribeSignalRef = useRef<(() => void) | null>(null);
 
-  // Derived role booleans
-  const isAdmin = profile?.roles?.includes('admin') || false;
-  const isAgent = profile?.roles?.includes('agent') || false;
-  const isModerator = profile?.roles?.includes('moderator') || false;
-
-  const logout = async () => {
+  const fetchProfile = useCallback(async (uid: string) => {
+    setProfileLoading(true);
     try {
-      await AuthService.logout();
+      const data = await UserService.getProfileById(uid);
+      setProfile(data);
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.warn("[Auth] Profile not found or error fetching:", error);
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
     }
-  };
+  }, []);
+
+  const refreshAuthToken = useCallback(async (firebaseUser: User) => {
+    try {
+      await firebaseUser.getIdToken(true);
+      const decodedToken = await firebaseUser.getIdTokenResult();
+      const role = (decodedToken.claims.app_role as string) || "customer";
+      
+      console.log("[Auth] Custom Claims:", decodedToken.claims);
+      setAppRole(role);
+      
+      // Also trigger profile refresh when token changes (might mean role changed)
+      await fetchProfile(firebaseUser.uid);
+    } catch (error) {
+      console.error("[Auth] Error refreshing token:", error);
+    }
+  }, [fetchProfile]);
 
   useEffect(() => {
-    const unsubscribe = AuthService.onAuthStateChange(async (firebaseUser) => {
-      setUser(firebaseUser);
-      lastKnownUser = firebaseUser;
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log(`[Auth] State Change: ${firebaseUser ? "Login" : "Logout"}`);
       
-      // Stop initial UI blocking IMMEDIATELY
-      setLoading(false);
-      authWasInitialized = true;
-      
+      // ✅ Always clean up previous signal listener first
+      if (unsubscribeSignalRef.current) {
+        unsubscribeSignalRef.current();
+        unsubscribeSignalRef.current = null;
+      }
+
       if (firebaseUser) {
-        console.log("Auth State Changed : Logged in", firebaseUser.uid);
-        setProfileLoading(true);
-        
-        try {
-          // Initial Redux sync
-          dispatch(setReduxUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-          }));
+        setUser(firebaseUser);
+        await refreshAuthToken(firebaseUser);
+        setLoading(false);
 
-          // 1. Wait for custom claims (blocking functions)
-          await AuthService.waitForClaims(firebaseUser);
-
-          // 2. Sync with Supabase Profile
-          let userData: UserProfile | null = null;
-          try {
-            userData = await UserService.getProfileById(firebaseUser.uid);
-            console.log("Fetched Supabase Profile:", userData);
-          } catch (e: any) {
-            console.log("User profile not found, creating new one...");
-            try {
-              userData = await UserService.createProfile({
-                id: firebaseUser.uid,
-                email: firebaseUser.email,
-                name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-                roles: ["user"],
-              });
-              console.log("Created new profile:", userData);
-            } catch (createError) {
-              console.error("Failed to create user profile:", createError);
+        // ✅ Store unsubscribe in ref so it persists across renders
+        unsubscribeSignalRef.current = onSnapshot(
+          doc(db, "user_signals", firebaseUser.uid),
+          async (snapshot) => {
+            if (snapshot.exists() && snapshot.data().needsTokenRefresh) {
+              console.log("[Auth] Role change detected, refreshing token...");
+              await refreshAuthToken(firebaseUser);
+              try {
+                await deleteDoc(snapshot.ref);
+              } catch (error) {
+                console.error("[Auth] Error deleting user signal:", error);
+              }
             }
           }
+        );
 
-          if (userData) {
-            setProfile(userData);
-            dispatch(setReduxUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName || userData.name,
-              photoURL: firebaseUser.photoURL || userData.profile_picture_url || null,
-            }));
-          }
-        } catch (error) {
-          console.error("Unexpected error during auth sync:", error);
-        } finally {
-          setProfileLoading(false);
-        }
       } else {
-        console.log("Auth State Changed : Logged Out");
+        setUser(null);
         setProfile(null);
-        dispatch(clearUser());
+        setAppRole(null);
+        setLoading(false);
       }
-      
-      dispatch(setReduxLoading(false));
     });
 
-    return () => unsubscribe();
-  }, [dispatch]);
+    return () => {
+      unsubscribeAuth();
+      // ✅ Clean up signal listener on unmount
+      if (unsubscribeSignalRef.current) {
+        unsubscribeSignalRef.current();
+      }
+    };
+  }, [refreshAuthToken]);
+
+  const signOut = async () => {
+    // ✅ Clean up signal listener before signing out
+    if (unsubscribeSignalRef.current) {
+      unsubscribeSignalRef.current();
+      unsubscribeSignalRef.current = null;
+    }
+    await auth.signOut();
+  };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      currentUser: user,
-      profile, 
-      isAdmin, 
-      isAgent,
-      isModerator,
-      loading, 
-      profileLoading,
-      logout 
-    }}>
-      {/* 
-        We show children even during loading to prevent the "white screen" or "empty header" 
-        on navigation, but SiteFrame handles the loading UI for auth-specific elements.
-      */}
+    <AuthContext.Provider
+      value={{
+        user,
+        appRole,
+        profile,
+        loading,
+        profileLoading,
+        isAuthenticated: !!user,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

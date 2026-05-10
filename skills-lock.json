@@ -70,7 +70,7 @@
       "source": "firebase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/firebase-firestore/SKILL.md",
-      "computedHash": "d809920e21fc82b29040589133eb1023ce573286a8124ff269e20c4bf9672f8c"
+      "computedHash": "659c60ba81cb70c41a5d6b4ca33312a8e0461468510b2214fd185af9ac925174"
     },
     "firebase-firestore-standard": {
       "source": "firebase/agent-skills",

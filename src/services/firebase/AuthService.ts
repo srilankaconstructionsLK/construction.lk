@@ -36,6 +36,7 @@ export class AuthService {
       // Force refresh the token to get new claims
       const tokenResult = await user.getIdTokenResult(true);
       if (tokenResult.claims.role === 'authenticated') {
+        console.log(`[AuthService] Custom claims found: role=${tokenResult.claims.role}, app_role=${tokenResult.claims.app_role}`);
         return tokenResult;
       }
       // Wait 1 second before retrying

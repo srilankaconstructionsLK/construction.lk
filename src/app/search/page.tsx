@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SiteFrame } from "@/components/site-frame";
+import { MainLayout } from "@/components/layouts/main-layout";
 import { Search, MapPin, Filter, Star, Phone, MessageSquare, Send, ShieldCheck, ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +60,7 @@ const brands = [
 
 export default function SearchPage() {
   return (
-    <SiteFrame active="search">
+    <MainLayout active="search">
       <div className="bg-surface-container-low min-h-screen">
         {/* Breadcrumbs & Title */}
         <div className="bg-white border-b border-surface-variant py-8">
@@ -231,6 +231,6 @@ export default function SearchPage() {
           </div>
         </div>
       </div>
-    </SiteFrame>
+    </MainLayout>
   );
 }

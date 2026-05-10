@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -8,14 +8,14 @@
   --color-primary: #9a4600; /* Construction Orange */
   --color-primary-container: #f47a20;
   --color-on-primary: #ffffff;
-  
+
   --color-secondary: #516169; /* Dark Slate */
   --color-on-secondary: #ffffff;
 
   --color-background: #f8f9fa; /* Clean White / Off-white */
   --color-foreground: #191c1d;
   --color-on-background: #191c1d;
-  
+
   --color-surface: #f8f9fa;
   --color-on-surface: #191c1d;
   --color-surface-variant: #e1e3e4;
@@ -55,7 +55,12 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display tracking-tight font-bold;
   }
 }

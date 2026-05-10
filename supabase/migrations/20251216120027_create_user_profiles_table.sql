@@ -1,78 +1,88 @@
--- Function to handle updated_at timestamp
+-- ================================================
+-- Migration 002: Profiles Table
+-- ================================================
+
+-- 1. handle_updated_at trigger function
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-  new.updated_at = timezone('utc'::text, now());
-  RETURN new;
+  NEW.updated_at = timezone('utc'::text, now());
+  RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create tables
-CREATE TABLE profiles (
-  id text PRIMARY KEY, -- Firebase UID
-  email text,
-  name text,
-  roles text[] DEFAULT array[]::text[],
-  gender text CHECK (gender IN ('male', 'female', 'other', 'prefer_not_to_say') OR gender IS NULL),
+-- 2. Create profiles table
+CREATE TABLE public.profiles (
+  id                    text PRIMARY KEY,  -- Firebase UID
+  email                 text,
+  name                  text,
+  role                  text DEFAULT 'customer' CHECK (role IN ('customer', 'business_owner', 'agent', 'moderator', 'admin', 'super_admin')),
   have_business_profile boolean DEFAULT false,
-  phone text,
-  address text,
-  profile_picture_url text,
-  date_of_birth date,
-  city text,
-  verified boolean DEFAULT false,
-  created_at timestamp WITH time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at timestamp WITH time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+  gender                text CHECK (gender IN ('male', 'female', 'other', 'prefer_not_to_say') OR gender IS NULL),
+  phone                 text,
+  address               text,
+  profile_picture_url   text,
+  date_of_birth         date,
+  city                  text,
+  verified              boolean DEFAULT false,
+  created_at            timestamptz DEFAULT timezone('utc', now()) NOT NULL,
+  updated_at            timestamptz DEFAULT timezone('utc', now()) NOT NULL
 );
 
--- Enable RLS
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+-- 3. get_profile_role() — must be after table creation, before policies
+CREATE OR REPLACE FUNCTION public.get_profile_role(profile_id text)
+RETURNS text AS $$
+  SELECT role FROM public.profiles WHERE id = profile_id;
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
 
--- Policies
--- Secure policy using JWT 'sub' claim from Firebase
+GRANT EXECUTE ON FUNCTION public.get_profile_role(text) TO authenticated, service_role;
 
--- Select: Users can view their own profile
-CREATE POLICY "Users can view their own profile" 
-ON profiles FOR SELECT 
-USING ( (auth.jwt() ->> 'sub') = id );
+-- 4. Enable RLS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Insert: Users can insert their own profile
-CREATE POLICY "Users can insert their own profile" 
-ON profiles FOR INSERT 
-WITH CHECK ( (auth.jwt() ->> 'sub') = id );
+-- 5. RLS Policies
 
--- Update: Users can update their own profile
-CREATE POLICY "Users can update their own profile" 
-ON profiles FOR UPDATE 
-USING ( (auth.jwt() ->> 'sub') = id )
+-- Users: read own profile
+CREATE POLICY "Users can view their own profile"
+ON public.profiles FOR SELECT
+USING ( public.get_my_firebase_uid() = id );
+
+-- Users: create own profile
+CREATE POLICY "Users can insert their own profile"
+ON public.profiles FOR INSERT
+WITH CHECK ( public.get_my_firebase_uid() = id );
+
+-- Users: update own profile but cannot change their own role
+CREATE POLICY "Users can update their own profile"
+ON public.profiles FOR UPDATE
+USING ( public.get_my_firebase_uid() = id )
 WITH CHECK (
-  (auth.jwt() ->> 'sub') = id
+  public.get_my_firebase_uid() = id
   AND
-  roles = (SELECT roles FROM profiles WHERE id = (auth.jwt() ->> 'sub'))
+  role = public.get_profile_role(public.get_my_firebase_uid())
 );
 
--- Admin Policies
--- Admins can view all profiles
-CREATE POLICY "Admins can view all profiles" 
-ON profiles FOR SELECT 
-USING ( is_admin() );
+-- Admins: read all profiles
+CREATE POLICY "Admins can view all profiles"
+ON public.profiles FOR SELECT
+USING ( public.is_admin() );
 
--- Admins can update any profile (including roles)
-CREATE POLICY "Admins can update any profile" 
-ON profiles FOR UPDATE 
-USING ( is_admin() );
+-- Admins: update any profile including role column
+CREATE POLICY "Admins can update any profile"
+ON public.profiles FOR UPDATE
+USING ( public.is_admin() );
 
--- Admins can delete profiles
-CREATE POLICY "Admins can delete profiles" 
-ON profiles FOR DELETE 
-USING ( is_super_admin() );
+-- Super admins only: delete profiles
+CREATE POLICY "Super admins can delete profiles"
+ON public.profiles FOR DELETE
+USING ( public.is_super_admin() );
 
--- Performance: GIN Index for fast Role checks (@> operator)
-CREATE INDEX idx_profiles_roles ON profiles USING GIN (roles);
-CREATE INDEX idx_profiles_email ON profiles (email);
-CREATE INDEX idx_profiles_phone ON profiles (phone);
+-- 6. Indexes
+CREATE INDEX idx_profiles_role  ON public.profiles (role);
+CREATE INDEX idx_profiles_email ON public.profiles (email);
+CREATE INDEX idx_profiles_phone ON public.profiles (phone);
 
--- Trigger for profiles updated_at
+-- 7. Trigger
 CREATE TRIGGER handle_profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();

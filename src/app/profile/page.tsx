@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { SiteFrame } from "@/components/site-frame";
+import { MainLayout } from "@/components/layouts/main-layout";
 import { 
   MapPin, Phone, Mail, Globe, MessageSquare, 
   ShieldCheck, Star, Clock, FileText, 
@@ -39,7 +39,7 @@ const services = [
 
 export default function ProfilePage() {
   return (
-    <SiteFrame active="profile">
+    <MainLayout active="profile">
       <div className="bg-surface-container-low min-h-screen">
         {/* Profile Hero Header */}
         <section className="relative h-[300px] md:h-[400px] overflow-hidden bg-secondary">
@@ -292,6 +292,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </SiteFrame>
+    </MainLayout>
   );
 }

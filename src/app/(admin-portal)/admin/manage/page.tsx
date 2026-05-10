@@ -1,8 +1,14 @@
-export default function ManageUsersPage() {
+"use client";
+
+import { UserManagement } from "@/components/admin/UserManagement";
+import { useAuth } from "@/context/AuthContext";
+
+export default function AdminManagePage() {
+  const { appRole } = useAuth();
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <h1 className="text-2xl font-bold text-secondary mb-4">Manage Users</h1>
-      <p className="text-gray-500">This section is currently under development.</p>
+    <div className="p-4 md:p-8">
+      <UserManagement mode={(appRole === "super_admin" ? "super_admin" : "admin")} />
     </div>
   );
 }
