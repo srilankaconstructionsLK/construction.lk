@@ -143,11 +143,12 @@ function BusinessEntry({ name, location, verified = false, status, rating }: any
 }
 
 function AlertItem({ title, desc, type }: any) {
-  const colors = {
+  const colorMap: Record<string, string> = {
     warning: "border-amber-500",
     info: "border-blue-500",
     success: "border-emerald-500",
-  }[type as keyof typeof colors] || "border-surface-variant";
+  };
+  const colors = colorMap[type] || "border-surface-variant";
 
   return (
     <div className={`p-4 border-l-4 ${colors}`}>
