@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { UserNav } from "@/components/UserNav";
+import { LocationPickerModal } from "@/components/location-picker-modal";
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/store';
+import { hydrateLocation } from '@/redux/slices/locationSlice';
+import { setQuery } from '@/redux/slices/searchSlice';
+import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -16,7 +22,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,9 +34,22 @@ interface SiteFrameProps {
 export function MainLayout({ children, active }: SiteFrameProps) {
   const pathname = usePathname();
   const { user, loading } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const { selectedLocation: location } = useSelector((state: RootState) => state.location);
+  const { query } = useSelector((state: RootState) => state.search);
 
-  // Navigation links logic...
-  console.log("loading ",user, loading)
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (location && location !== 'All Sri Lanka') params.set('location', location);
+    router.push(`/search?${params.toString()}`);
+  };
+
+  // Sync location from localStorage on mount via thunk
+  useEffect(() => {
+    dispatch(hydrateLocation());
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
@@ -38,11 +57,11 @@ export function MainLayout({ children, active }: SiteFrameProps) {
       <header className="bg-white border-b border-surface-variant py-4 px-4 md:px-8 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <div className="relative w-40 h-10 overflow-hidden">
-              <Image
-                src="/logo.webp"
-                alt="Construction.lk Logo"
+          <Link href="/" className="flex items-center gap-3 shrink-0">
+            <div className="relative w-48 h-12 overflow-hidden">
+              <Image 
+                src="/logo.webp" 
+                alt="Construction.lk Logo" 
                 fill
                 className="object-contain"
                 priority
@@ -51,25 +70,36 @@ export function MainLayout({ children, active }: SiteFrameProps) {
           </Link>
 
           {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-2xl items-center bg-surface-container-low rounded-lg border border-surface-variant overflow-hidden shadow-sm transition-all focus-within:border-primary-container focus-within:ring-1 focus-within:ring-primary-container">
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSearch(); }}
+            className="hidden md:flex flex-1 max-w-2xl items-center bg-surface-container-low rounded-lg border border-surface-variant overflow-hidden shadow-sm transition-all focus-within:border-primary-container focus-within:ring-1 focus-within:ring-primary-container"
+          >
             <div className="flex items-center px-4 border-r border-surface-variant flex-1">
               <Search className="w-4 h-4 text-outline mr-3" />
               <Input
+                value={query}
+                onChange={(e) => dispatch(setQuery(e.target.value))}
                 placeholder="Search materials, heavy gear, suppliers..."
                 className="border-none bg-transparent shadow-none focus-visible:ring-0 text-xs h-11"
               />
             </div>
-            <div className="flex items-center px-5 border-r border-surface-variant cursor-pointer hover:bg-surface-container transition-colors h-11">
+            <div 
+              onClick={() => dispatch(setLocationPickerOpen(true))}
+              className="flex items-center px-5 border-r border-surface-variant cursor-pointer hover:bg-surface-container transition-colors h-11"
+            >
               <MapPin className="w-4 h-4 text-outline mr-2" />
-              <span className="text-[10px] font-black text-secondary uppercase tracking-[0.15em]">
-                Location
+              <span className="text-[10px] font-black text-secondary uppercase tracking-[0.15em] truncate max-w-[100px]">
+                {location}
               </span>
-              <ChevronDown className="w-3 h-3 ml-2 text-outline" />
+              <ChevronDown className="w-3 h-3 ml-2 text-outline shrink-0" />
             </div>
-            <Button className="rounded-none h-11 px-7 bg-primary-container hover:bg-primary transition-colors">
+            <Button 
+              type="submit"
+              className="rounded-none h-11 px-7 bg-primary-container hover:bg-primary transition-colors"
+            >
               <Search className="w-5 h-5 text-white" />
             </Button>
-          </div>
+          </form>
 
           {/* User Actions */}
           <div className="flex items-center gap-4 lg:gap-8 min-w-[240px] justify-end">
@@ -79,35 +109,24 @@ export function MainLayout({ children, active }: SiteFrameProps) {
                 <span>Initializing...</span>
               </div>
             ) : user ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-6">
+                <button className="relative p-2 text-secondary hover:bg-surface-variant/30 rounded-full transition-colors">
+                  <Bell className="w-5 h-5" />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-primary-container border-2 border-white rounded-full"></span>
+                </button>
+                <div className="w-px h-6 bg-surface-variant"></div>
                 <UserNav />
               </div>
             ) : (
-              <div className="flex items-center gap-6">
-                <Link
-                  href="/login"
-                  className="text-xs font-bold uppercase tracking-widest text-secondary hover:text-primary-container transition-colors"
-                >
-                  Sign In
+              <div className="flex items-center gap-4">
+                <Link href="/login">
+                  <Button variant="ghost" className="text-xs font-black uppercase tracking-widest text-secondary/60 hover:text-secondary">Login</Button>
                 </Link>
-                <Link href="/register" className="hidden sm:block">
-                  <Button
-                    variant="outline"
-                    className="border-primary-container text-primary-container hover:bg-primary-container hover:text-white font-bold h-10 px-6 rounded-md transition-all"
-                  >
-                    Join Network
-                  </Button>
+                <Link href="/register">
+                  <Button className="bg-secondary text-white hover:bg-secondary/90 text-xs font-black uppercase tracking-widest px-6 h-10 rounded-lg">Join Network</Button>
                 </Link>
               </div>
             )}
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-secondary"
-            >
-              <Menu className="w-7 h-7" />
-            </Button>
           </div>
         </div>
       </header>
@@ -127,7 +146,7 @@ export function MainLayout({ children, active }: SiteFrameProps) {
               <li key={item} className="h-full flex items-center">
                 <Link
                   href={item === "Suppliers" ? "/search" : "#"}
-                  className={`text-[11px] font-black uppercase tracking-[0.15em] transition-all hover:text-primary-container relative h-full flex items-center ${
+                  className={`text-[13px] font-bold uppercase tracking-widest transition-all hover:text-primary-container relative h-full flex items-center ${
                     item === "Suppliers" && pathname === "/search"
                       ? "text-primary-container after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-primary-container"
                       : "text-secondary"
@@ -144,8 +163,10 @@ export function MainLayout({ children, active }: SiteFrameProps) {
         </div>
       </nav>
 
-      {/* Main Content Area */}
-      <main className="flex-1">{children}</main>
+      {/* Main Content */}
+      <main className="flex-1">
+        {children}
+      </main>
 
       {/* Industrial Footer */}
       <footer className="bg-secondary text-white pt-24 pb-12 px-4 md:px-8 border-t-[8px] border-primary-container">
@@ -301,7 +322,9 @@ export function MainLayout({ children, active }: SiteFrameProps) {
           </div>
         </div>
       </footer>
+
+      {/* Global Modals */}
+      <LocationPickerModal />
     </div>
   );
 }
-

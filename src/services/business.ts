@@ -64,6 +64,12 @@ export interface BusinessProfile {
  * Get business profile by ID with its services
  */
 export async function getBusinessById(supabase: SupabaseClient, id: string): Promise<BusinessProfile | null> {
+  // Simple UUID validation to prevent console errors when using numeric mock IDs
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('business_profiles')
     .select('*, business_services(*)')

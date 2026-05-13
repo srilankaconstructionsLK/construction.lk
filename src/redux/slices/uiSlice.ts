@@ -9,7 +9,8 @@ interface UIState {
     subscriptionPlan: string | null;
   };
   searchQuery: string;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
+  isLocationPickerOpen: boolean;
 }
 
 const initialState: UIState = {
@@ -21,7 +22,8 @@ const initialState: UIState = {
     subscriptionPlan: null,
   },
   searchQuery: "",
-  theme: 'light',
+  theme: "light",
+  isLocationPickerOpen: false,
 };
 
 const uiSlice = createSlice({
@@ -31,17 +33,23 @@ const uiSlice = createSlice({
     setActiveModal: (state, action: PayloadAction<string | null>) => {
       state.activeModal = action.payload;
     },
+    setLocationPickerOpen: (state, action: PayloadAction<boolean>) => {
+      state.isLocationPickerOpen = action.payload;
+    },
     setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
       state.sidebarCollapsed = action.payload;
     },
-    updateSearchFilters: (state, action: PayloadAction<Partial<UIState['searchFilters']>>) => {
+    updateSearchFilters: (
+      state,
+      action: PayloadAction<Partial<UIState["searchFilters"]>>,
+    ) => {
       state.searchFilters = { ...state.searchFilters, ...action.payload };
     },
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
     },
     toggleTheme: (state) => {
-      state.theme = state.theme === 'light' ? 'dark' : 'light';
+      state.theme = state.theme === "light" ? "dark" : "light";
     },
     resetFilters: (state) => {
       state.searchFilters = initialState.searchFilters;
@@ -50,13 +58,14 @@ const uiSlice = createSlice({
   },
 });
 
-export const { 
-  setActiveModal, 
-  setSidebarCollapsed, 
-  updateSearchFilters, 
-  setSearchQuery, 
+export const {
+  setActiveModal,
+  setLocationPickerOpen,
+  setSidebarCollapsed,
+  updateSearchFilters,
+  setSearchQuery,
   toggleTheme,
-  resetFilters 
+  resetFilters,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

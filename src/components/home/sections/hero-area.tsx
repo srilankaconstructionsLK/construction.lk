@@ -1,20 +1,33 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from "framer-motion";
 import { Search, MapPin, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
-import { LocationPickerModal } from '../../location-picker-modal';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
+import { setQuery } from '@/redux/slices/searchSlice';
+import { useRouter } from 'next/navigation';
 
 const popularSearches = [
   "Structural Steel", "Ready-Mix Concrete", "Excavators", "Electrical Cables", "CIDA Contractors"
 ];
 
 export function HeroArea() {
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [location, setLocation] = useState("All Sri Lanka");
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { selectedLocation: location } = useSelector((state: RootState) => state.location);
+  const { query } = useSelector((state: RootState) => state.search);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (location && location !== 'All Sri Lanka') params.set('location', location);
+    router.push(`/search?${params.toString()}`);
+  };
 
   return (
     <section className="relative h-[650px] md:h-[750px] overflow-hidden bg-secondary">
@@ -57,13 +70,18 @@ export function HeroArea() {
           <div className="relative w-full max-w-4xl mx-auto group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary-container/20 to-primary/20 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition duration-1000"></div>
             <div className="relative bg-white/10 backdrop-blur-md p-1.5 rounded-xl border border-white/10 shadow-2xl">
-              <div className="bg-white rounded-lg flex flex-col md:flex-row items-stretch divide-y md:divide-y-0 md:divide-x divide-surface-variant overflow-hidden">
+              <form 
+                onSubmit={(e) => { e.preventDefault(); handleSearch(); }}
+                className="bg-white rounded-lg flex flex-col md:flex-row items-stretch divide-y md:divide-y-0 md:divide-x divide-surface-variant overflow-hidden"
+              >
                 
                 {/* Search Input */}
                 <div className="flex-1 flex items-center px-6 py-4 md:py-0 min-h-[64px]">
                   <Search className="w-5 h-5 text-outline mr-4 flex-shrink-0" />
                   <Input 
                     type="text"
+                    value={query}
+                    onChange={(e) => dispatch(setQuery(e.target.value))}
                     placeholder="Search materials, machinery, suppliers..." 
                     className="border-none bg-transparent shadow-none focus-visible:ring-0 text-sm font-semibold text-secondary placeholder:text-secondary/40 h-full p-0"
                   />
@@ -71,7 +89,7 @@ export function HeroArea() {
 
                 {/* Location Selector */}
                 <div 
-                  onClick={() => setIsLocationOpen(true)}
+                  onClick={() => dispatch(setLocationPickerOpen(true))}
                   className="w-full md:w-64 flex items-center px-6 py-4 md:py-0 cursor-pointer hover:bg-surface-variant/30 transition-colors min-h-[64px]"
                 >
                   <MapPin className="w-5 h-5 text-outline mr-4 flex-shrink-0" />
@@ -84,10 +102,13 @@ export function HeroArea() {
                 </div>
 
                 {/* Search Button */}
-                <Button className="w-full md:w-auto px-12 h-[64px] rounded-none bg-primary-container hover:bg-primary text-white font-black uppercase tracking-[0.2em] text-xs shadow-none transition-all active:scale-[0.98]">
+                <Button 
+                  type="submit"
+                  className="w-full md:w-auto px-12 h-[64px] rounded-none bg-primary-container hover:bg-primary text-white font-black uppercase tracking-[0.2em] text-xs shadow-none transition-all active:scale-[0.98]"
+                >
                   Find Now
                 </Button>
-              </div>
+              </form>
             </div>
           </div>
 
@@ -109,13 +130,6 @@ export function HeroArea() {
       {/* Decorative Bottom Gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-20" />
 
-      {/* Location Picker Modal */}
-      <LocationPickerModal 
-        isOpen={isLocationOpen}
-        onClose={() => setIsLocationOpen(false)}
-        onLocationSelect={(loc) => setLocation(loc)}
-        currentLocation={location}
-      />
     </section>
   );
 }

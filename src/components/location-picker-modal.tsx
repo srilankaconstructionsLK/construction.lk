@@ -1,56 +1,27 @@
 "use client";
 
 import { ChevronRight, MapPin, Search, ArrowLeft, X } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/store';
+import { setLocationWithPersist, District } from '@/redux/slices/locationSlice';
+import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
 
-interface District {
-  name: string;
-  cities: string[];
-}
-
-const mockDistricts: District[] = [
-  {
-    name: "Colombo",
-    cities: ["Colombo 1-15", "Dehiwala", "Mount Lavinia", "Moratuwa", "Kotte", "Battaramulla", "Nugegoda", "Piliyandala", "Maharagama", "Homagama"]
-  },
-  {
-    name: "Gampaha",
-    cities: ["Negombo", "Gampaha City", "Veyangoda", "Kiribathgoda", "Kadawatha", "Kelaniya", "Ja-Ela", "Wattala", "Minuwangoda"]
-  },
-  {
-    name: "Kandy",
-    cities: ["Kandy City", "Peradeniya", "Gampola", "Katugastota", "Kundasale", "Akurana", "Wathelage"]
-  },
-  {
-    name: "Kalutara",
-    cities: ["Kalutara City", "Panadura", "Horana", "Beruwala", "Matugama", "Aluthgama"]
-  },
-  {
-    name: "Galle",
-    cities: ["Galle City", "Hikkaduwa", "Ambalangoda", "Karapitiya", "Baddegama", "Elpitiya"]
-  },
-  {
-    name: "Matara",
-    cities: ["Matara City", "Weligama", "Dikwella", "Hakmana", "Kamburupitiya"]
-  }
-];
-
-interface LocationPickerModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onLocationSelect?: (location: string) => void;
-  currentLocation?: string;
-}
-
-export const LocationPickerModal = ({ 
-  isOpen, 
-  onClose, 
-  onLocationSelect, 
-  currentLocation 
-}: LocationPickerModalProps) => {
+export const LocationPickerModal = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { selectedLocation: currentLocation, districts } = useSelector((state: RootState) => state.location);
+  const { isLocationPickerOpen: isOpen } = useSelector((state: RootState) => state.ui);
+  
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(mockDistricts[0]);
+  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
   const [showCitiesMobile, setShowCitiesMobile] = useState(false);
+
+  // Sync selectedDistrict with districts when they load or modal opens
+  useEffect(() => {
+    if (isOpen && districts.length > 0 && !selectedDistrict) {
+      setSelectedDistrict(districts[0]);
+    }
+  }, [isOpen, districts, selectedDistrict]);
 
   // Search logic
   const searchResults = useMemo(() => {
@@ -58,11 +29,7 @@ export const LocationPickerModal = ({
     const lower = searchTerm.toLowerCase();
     const results: { city: string; district: string }[] = [];
     
-    if ("all sri lanka".includes(lower)) {
-        results.push({ city: "All Sri Lanka", district: "Island-wide" });
-    }
-
-    mockDistricts.forEach(d => {
+    districts.forEach(d => {
       d.cities.forEach(c => {
         if (c.toLowerCase().includes(lower) || d.name.toLowerCase().includes(lower)) {
           results.push({ city: c, district: d.name });
@@ -70,11 +37,15 @@ export const LocationPickerModal = ({
       });
     });
     return results.slice(0, 20);
-  }, [searchTerm]);
+  }, [searchTerm, districts]);
 
   const handleSelect = (location: string) => {
-    onLocationSelect?.(location);
-    onClose();
+    dispatch(setLocationWithPersist(location));
+    dispatch(setLocationPickerOpen(false));
+  };
+
+  const onClose = () => {
+    dispatch(setLocationPickerOpen(false));
   };
 
   if (!isOpen) return null;
@@ -83,10 +54,9 @@ export const LocationPickerModal = ({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-secondary/80 backdrop-blur-sm" onClick={onClose} />
-
+      
       {/* Modal Container */}
       <div className="relative w-full max-w-2xl bg-white rounded-sm shadow-2xl border border-surface-variant flex flex-col h-[600px] overflow-hidden">
-        
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant bg-white">
           <div>
@@ -113,27 +83,24 @@ export const LocationPickerModal = ({
               <span className="text-[10px] font-black text-primary-container uppercase tracking-widest">All Sri Lanka</span>
             </button>
 
-            {mockDistricts.map((d) => (
+            {districts.map((district) => (
               <button
-                key={d.name}
+                key={district.name}
                 onClick={() => {
-                    setSelectedDistrict(d);
-                    setShowCitiesMobile(true);
+                  setSelectedDistrict(district);
+                  setShowCitiesMobile(true);
                 }}
-                className={`flex items-center justify-between px-6 py-3 border-b border-surface-variant hover:bg-white transition-all text-left ${
-                    selectedDistrict?.name === d.name ? "bg-white border-r-4 border-r-primary-container" : ""
-                }`}
+                className={`flex items-center justify-between px-6 py-3 border-b border-surface-variant hover:bg-white transition-all text-left ${selectedDistrict?.name === district.name ? "bg-white border-r-4 border-r-primary-container" : ""}`}
               >
-                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedDistrict?.name === d.name ? "text-secondary" : "text-secondary/50"}`}>
-                  {d.name}
-                </span>
-                <ChevronRight size={14} className={selectedDistrict?.name === d.name ? "text-primary-container" : "text-secondary/20"} />
+                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedDistrict?.name === district.name ? "text-secondary" : "text-secondary/50"}`}>{district.name}</span>
+                <ChevronRight size={14} className={selectedDistrict?.name === district.name ? "text-primary-container" : "text-secondary/20"} />
               </button>
             ))}
           </div>
 
           {/* Cities / Search Area */}
           <div className={`lg:w-[65%] w-full flex-col overflow-hidden bg-white ${!showCitiesMobile && !searchTerm ? "hidden lg:flex" : "flex"}`}>
+            
             {/* Search Input */}
             <div className="p-4 border-b border-surface-variant flex items-center gap-2">
               {showCitiesMobile && !searchTerm && (
@@ -143,7 +110,7 @@ export const LocationPickerModal = ({
               )}
               <div className="relative flex-1">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" />
-                <input
+                <input 
                   autoFocus
                   type="text"
                   placeholder="SEARCH CITY OR DISTRICT..."
@@ -175,11 +142,6 @@ export const LocationPickerModal = ({
                       <ArrowLeft className="w-3 h-3 text-primary-container rotate-180 opacity-0 group-hover:opacity-100 transition-all" />
                     </button>
                   ))}
-                  {searchResults.length === 0 && (
-                    <div className="py-20 text-center">
-                      <p className="text-[10px] font-black text-secondary/30 uppercase tracking-widest italic">No matching locations found</p>
-                    </div>
-                  )}
                 </div>
               ) : selectedDistrict ? (
                 /* Cities List */
@@ -199,20 +161,14 @@ export const LocationPickerModal = ({
                       <button
                         key={city}
                         onClick={() => handleSelect(city)}
-                        className={`p-3 rounded-sm text-left transition-all group ${
-                          currentLocation === city ? "bg-primary-container/5 text-primary-container ring-1 ring-primary-container/20" : "hover:bg-surface text-secondary/60 hover:text-secondary"
-                        }`}
+                        className={`p-3 rounded-sm text-left transition-all group ${currentLocation === city ? "bg-primary-container/5 text-primary-container ring-1 ring-primary-container/20" : "hover:bg-surface text-secondary/60 hover:text-secondary"}`}
                       >
                         <span className="text-[10px] font-black uppercase tracking-widest">{city}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-[10px] font-black text-secondary/20 uppercase tracking-widest">
-                  Select a regional district
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
