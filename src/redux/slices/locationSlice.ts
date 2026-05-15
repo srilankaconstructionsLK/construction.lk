@@ -1,108 +1,44 @@
+// src/redux/slices/locationSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk } from "../store";
+import { LocationService, District } from "@/services/supabase/LocationService";
 
-export interface District {
-  name: string;
-  cities: string[];
-}
+export type { District };
 
 interface LocationState {
   selectedLocation: string;
   districts: District[];
+  loading: boolean;
 }
-
-const mockDistricts: District[] = [
-  {
-    name: "Colombo",
-    cities: [
-      "Colombo 1-15",
-      "Dehiwala",
-      "Mount Lavinia",
-      "Moratuwa",
-      "Kotte",
-      "Battaramulla",
-      "Nugegoda",
-      "Piliyandala",
-      "Maharagama",
-      "Homagama",
-    ],
-  },
-  {
-    name: "Gampaha",
-    cities: [
-      "Negombo",
-      "Gampaha City",
-      "Veyangoda",
-      "Kiribathgoda",
-      "Kadawatha",
-      "Kelaniya",
-      "Ja-Ela",
-      "Wattala",
-      "Minuwangoda",
-    ],
-  },
-  {
-    name: "Kandy",
-    cities: [
-      "Kandy City",
-      "Peradeniya",
-      "Gampola",
-      "Katugastota",
-      "Kundasale",
-      "Akurana",
-      "Wathelage",
-    ],
-  },
-  {
-    name: "Kalutara",
-    cities: [
-      "Kalutara City",
-      "Panadura",
-      "Horana",
-      "Beruwala",
-      "Matugama",
-      "Aluthgama",
-    ],
-  },
-  {
-    name: "Galle",
-    cities: [
-      "Galle City",
-      "Hikkaduwa",
-      "Ambalangoda",
-      "Karapitiya",
-      "Baddegama",
-      "Elpitiya",
-    ],
-  },
-  {
-    name: "Matara",
-    cities: ["Matara City", "Weligama", "Dikwella", "Hakmana", "Kamburupitiya"],
-  },
-];
 
 const initialState: LocationState = {
   selectedLocation: "All Sri Lanka",
-  districts: mockDistricts,
+  districts: [],
+  loading: true,
 };
 
 const locationSlice = createSlice({
   name: "location",
   initialState,
   reducers: {
-    // Pure reducer — no side effects
     setLocation: (state, action: PayloadAction<string>) => {
       state.selectedLocation = action.payload;
     },
     setDistricts: (state, action: PayloadAction<District[]>) => {
       state.districts = action.payload;
+      state.loading = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
   },
 });
 
-export const { setLocation, setDistricts } = locationSlice.actions;
+export const { setLocation, setDistricts, setLoading } = locationSlice.actions;
 
-// Thunk: sets location in store AND persists to localStorage
+/**
+ * Thunk: sets location in store AND persists to localStorage
+ */
 export const setLocationWithPersist =
   (location: string): AppThunk =>
   (dispatch) => {
@@ -112,7 +48,9 @@ export const setLocationWithPersist =
     }
   };
 
-// Thunk: reads from localStorage after hydration and syncs to store
+/**
+ * Thunk: reads from localStorage after hydration and syncs to store
+ */
 export const hydrateLocation = (): AppThunk => (dispatch) => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem("selected_location");
@@ -120,6 +58,23 @@ export const hydrateLocation = (): AppThunk => (dispatch) => {
       dispatch(setLocation(saved));
     }
   }
+};
+
+/**
+ * Thunk: Starts a real-time listener for location data from Supabase.
+ * This keeps the Redux store in sync with the database for all users.
+ */
+export const startLocationSync = (): AppThunk<() => void> => (dispatch, getState) => {
+  // Only set loading if we don't have districts yet to prevent flicker on re-init
+  if (getState().location.districts.length === 0) {
+    dispatch(setLoading(true));
+  }
+
+  const unsubscribe = LocationService.listenToLocationsAggregation((districts) => {
+    dispatch(setDistricts(districts));
+  });
+
+  return unsubscribe;
 };
 
 export default locationSlice.reducer;

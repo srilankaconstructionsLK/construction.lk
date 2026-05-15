@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { UserProfile, UserService } from "@/services/supabase/UserService";
-import { BusinessProfile } from "@/services/business";
+import { BusinessProfile } from "@/services/supabase/BusinessService";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AdminState {
   users: UserProfile[];
@@ -29,19 +29,27 @@ const initialState: AdminState = {
 // Fetch users for admin management
 export const fetchAdminUsers = createAsyncThunk(
   "admin/fetchUsers",
-  async ({ page, limit, search }: { page: number; limit: number; search?: string }, { rejectWithValue }) => {
+  async (
+    { page, limit, search }: { page: number; limit: number; search?: string },
+    { rejectWithValue },
+  ) => {
     try {
-      return await UserService.getUsersPaginated(page, limit, search);
-    } catch (err: any) {
-      return rejectWithValue(err.message);
+      const result = await UserService.getUsersPaginated(page, limit, search);
+      return { ...result, page, limit };
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      return rejectWithValue(message);
     }
-  }
+  },
 );
 
 const adminSlice = createSlice({
   name: "admin",
   initialState,
   reducers: {
+    // Businesses are currently fetched outside this slice and normalized via this action.
+    // Add a dedicated fetchAdminBusinesses thunk when business pagination/filtering is moved into Redux.
     setBusinesses: (state, action: PayloadAction<BusinessProfile[]>) => {
       state.businesses = action.payload;
     },
@@ -62,7 +70,10 @@ const adminSlice = createSlice({
         state.loading = false;
         state.users = action.payload.data;
         state.pagination.totalItems = action.payload.count || 0;
-        state.pagination.totalPages = Math.ceil((action.payload.count || 0) / 10); // Assuming 10 items per page
+        state.pagination.currentPage = action.payload.page;
+        state.pagination.totalPages = Math.ceil(
+          (action.payload.count || 0) / action.payload.limit,
+        );
       })
       .addCase(fetchAdminUsers.rejected, (state, action) => {
         state.loading = false;

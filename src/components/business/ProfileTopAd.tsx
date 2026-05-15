@@ -1,13 +1,12 @@
 "use client";
 
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAppSelector } from '@/redux/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export const ProfileTopAd = () => {
-  const { ads } = useSelector((state: RootState) => state.ads);
+  const { ads } = useAppSelector((state) => state.ads);
   
   // Get an ad with placement 'search_result_top_slider' or 'search_result_banner'
   const topAd = ads.find(ad => ad.placement === 'search_result_top_slider') || ads[0];

@@ -17,16 +17,8 @@ export const store = configureStore({
     location: locationReducer,
     ads: adReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        // Add any specific action types here if needed in the future
-        ignoredActions: [],
-      },
-    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action<string>>;
-

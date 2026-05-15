@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAppSelector } from '@/redux/hooks';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -12,7 +11,7 @@ interface SearchResultCarouselProps {
 }
 
 export const SearchResultCarousel = ({ categoryId }: SearchResultCarouselProps) => {
-  const { ads } = useSelector((state: RootState) => state.ads);
+  const { ads } = useAppSelector((state) => state.ads);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const filteredAds = ads.filter(ad => 

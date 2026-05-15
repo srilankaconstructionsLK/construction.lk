@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 
+import { toast } from "sonner";
+
 const ROLE_REDIRECTS: Record<string, string> = {
   customer: "/",
   business_owner: "/dashboard",
@@ -47,6 +49,11 @@ export default function LoginPage() {
       const user = await AuthService.login(email, password);
       const decoded = await user.getIdTokenResult();
       const role = (decoded.claims.app_role as string) ?? "customer";
+      
+      toast.success(`Welcome back!`, {
+        description: `Successfully authenticated as ${role.replace('_', ' ')}.`,
+      });
+
       router.push(ROLE_REDIRECTS[role] ?? "/");
     } catch (err: any) {
       setError(err.message);
@@ -61,6 +68,11 @@ export default function LoginPage() {
       const user = await AuthService.signInWithGoogle();
       const decoded = await user.getIdTokenResult();
       const role = (decoded.claims.app_role as string) ?? "customer";
+
+      toast.success(`Welcome, ${user.displayName || 'Industrial Partner'}!`, {
+        description: "Successfully signed in with Google.",
+      });
+
       router.push(ROLE_REDIRECTS[role] ?? "/");
     } catch (err: any) {
       setError(err.message);

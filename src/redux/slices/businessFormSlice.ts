@@ -2,10 +2,22 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface BusinessFormState {
   step: number;
-  formData: any;
+  formData: BusinessFormData;
   images: string[];
   isSubmitting: boolean;
   error: string | null;
+}
+
+interface BusinessFormData {
+  businessName?: string;
+  category?: string;
+  district?: string;
+  city?: string;
+  description?: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  website?: string;
 }
 
 const initialState: BusinessFormState = {
@@ -23,7 +35,7 @@ const businessFormSlice = createSlice({
     setStep: (state, action: PayloadAction<number>) => {
       state.step = action.payload;
     },
-    updateFormData: (state, action: PayloadAction<any>) => {
+    updateFormData: (state, action: PayloadAction<Partial<BusinessFormData>>) => {
       state.formData = { ...state.formData, ...action.payload };
     },
     setImages: (state, action: PayloadAction<string[]>) => {

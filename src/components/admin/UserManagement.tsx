@@ -47,7 +47,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { UserProfile, UserService } from "@/services/supabase/UserService";
-import { setUserRole } from "@/lib/setUserRole";
+import { RoleService } from "@/services/firebase/RoleService";
 import { useAuth } from "@/context/AuthContext";
 
 const VALID_ROLES = [
@@ -137,7 +137,7 @@ export function UserManagement({ mode }: UserManagementProps) {
   const handleRoleChange = async (uid: string, newRole: string) => {
     setActionLoading(uid);
     try {
-      await setUserRole(uid, newRole);
+      await RoleService.setUserRole(uid, newRole);
       await fetchUsers();
       alert(`Role updated successfully!`);
     } catch (error: any) {
@@ -157,7 +157,7 @@ export function UserManagement({ mode }: UserManagementProps) {
         alert("No user found with this email");
         return;
       }
-      await setUserRole(user.id, selectedRole);
+      await RoleService.setUserRole(user.id, selectedRole);
       alert("Role assigned successfully!");
       setEmail("");
       fetchUsers();
@@ -237,7 +237,7 @@ export function UserManagement({ mode }: UserManagementProps) {
         </div>
 
         {/* User Inventory Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-surface-variant overflow-hidden">
+        <div className="bg-white rounded-md shadow-sm border border-surface-variant overflow-hidden">
           <div className="px-6 py-4 border-b border-surface-variant bg-surface-container-lowest flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
               <Filter className="w-3.5 h-3.5 text-secondary/40" />
@@ -245,16 +245,16 @@ export function UserManagement({ mode }: UserManagementProps) {
                 {viewMode === "privileged" ? "Security-Cleared Personnel" : `Complete User Registry (${totalItems})`}
               </h3>
             </div>
-            <div className="flex bg-surface-container-low p-1 rounded-sm border border-surface-variant">
+            <div className="inline-grid grid-cols-2 bg-gray-100 p-1 rounded-sm border border-gray-200">
               <button 
                 onClick={() => setViewMode("privileged")}
-                className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${viewMode === "privileged" ? "bg-white text-primary shadow-sm" : "text-secondary/40 hover:text-secondary"}`}
+                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${viewMode === "privileged" ? "bg-white text-secondary shadow-sm" : "text-secondary/40 hover:text-secondary"}`}
               >
                 Privileged
               </button>
               <button 
                 onClick={() => setViewMode("all")}
-                className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${viewMode === "all" ? "bg-white text-primary shadow-sm" : "text-secondary/40 hover:text-secondary"}`}
+                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${viewMode === "all" ? "bg-white text-secondary shadow-sm" : "text-secondary/40 hover:text-secondary"}`}
               >
                 All Users
               </button>

@@ -1,5 +1,6 @@
-import { createBrowserClient } from '@supabase/ssr';
-import { auth } from '@/lib/firebase';
+import { auth } from "@/lib/firebase/firebase";
+import type { Database } from "@/types/supabase";
+import { createBrowserClient } from "@supabase/ssr";
 
 /**
  * Creates a Supabase client that automatically bridges Firebase Auth with Supabase RLS.
@@ -7,7 +8,7 @@ import { auth } from '@/lib/firebase';
  * Firebase caches the token for 1 hour — no unnecessary network requests.
  */
 export function createClient() {
-  return createBrowserClient(
+  return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -17,11 +18,11 @@ export function createClient() {
           // false = use cached token (faster), auto-refreshes only when expired
           return await auth.currentUser.getIdToken(false);
         } catch (error) {
-          console.error('[Supabase] Failed to get Firebase ID token:', error);
+          console.error("[Supabase] Failed to get Firebase ID token:", error);
           return null;
         }
       },
-    }
+    },
   );
 }
 

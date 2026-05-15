@@ -1,13 +1,12 @@
 "use client";
 
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAppSelector } from '@/redux/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export const BusinessProfileSideAd = () => {
-  const { ads } = useSelector((state: RootState) => state.ads);
+  const { ads } = useAppSelector((state) => state.ads);
   
   // Find a relevant side ad for the business profile page
   const sideAd = ads.find(ad => ad.placement === 'business_profile_side_ad');

@@ -1,15 +1,99 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ReduxProvider } from "@/redux/provider";
+import { AppBootstrap } from "@/components/AppBootstrap";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Construction.lk | Sri Lanka Business Directory",
-  description: "The leading construction industry portal and business directory in Sri Lanka.",
+const siteConfig = {
+  name: "Construction.lk",
+  description: "The leading construction industry marketplace and business directory in Sri Lanka. Connect with verified suppliers, find heavy machinery, and source building materials effortlessly.",
+  url: "https://construction.lk",
+  ogImage: "https://construction.lk/logo.png",
+  keywords: [
+    "construction sri lanka",
+    "building materials",
+    "civil engineering",
+    "architecture",
+    "verified suppliers",
+    "heavy machinery rental",
+    "construction directory",
+    "B2B marketplace Sri Lanka",
+    "CIDA graded contractors"
+  ]
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#336791",
+};
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: "Construction.lk | #1 Construction B2B Marketplace in Sri Lanka",
+    template: "%s | Construction.lk",
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: "Construction.lk Team" }],
+  creator: "Construction.lk",
+  publisher: "Construction.lk",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_LK",
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: "Construction.lk | Industrial B2B Marketplace",
+    description: siteConfig.description,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: "Construction.lk Marketplace",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Construction.lk | Industrial B2B Marketplace",
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@constructionlk",
+  },
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/icon-only.png",
+    apple: "/icon-only.png",
+  },
+};
+
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export default function RootLayout({
   children,
@@ -17,13 +101,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ReduxProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </ReduxProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReduxProvider>
+            <AuthProvider>
+              <AppBootstrap>
+                {children}
+              </AppBootstrap>
+            </AuthProvider>
+          </ReduxProvider>
+          <Toaster position="top-right" closeButton richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

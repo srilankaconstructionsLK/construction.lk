@@ -1,15 +1,15 @@
-import { auth } from '@/lib/firebase';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import { auth } from "@/lib/firebase/firebase";
+import {
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
-  updateProfile,
-  onAuthStateChanged,
-  User,
   GoogleAuthProvider,
+  IdTokenResult,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
   signInWithPopup,
-  IdTokenResult
-} from 'firebase/auth';
+  updateProfile,
+  User,
+} from "firebase/auth";
 
 export class AuthService {
   /**
@@ -30,17 +30,22 @@ export class AuthService {
    * Wait for custom claims to be populated by Cloud Functions
    * This is critical for Supabase RLS to recognize the 'authenticated' role.
    */
-  static async waitForClaims(user: User, maxAttempts = 10): Promise<IdTokenResult> {
+  static async waitForClaims(
+    user: User,
+    maxAttempts = 10,
+  ): Promise<IdTokenResult> {
     let attempts = 0;
     while (attempts < maxAttempts) {
       // Force refresh the token to get new claims
       const tokenResult = await user.getIdTokenResult(true);
-      if (tokenResult.claims.role === 'authenticated') {
-        console.log(`[AuthService] Custom claims found: role=${tokenResult.claims.role}, app_role=${tokenResult.claims.app_role}`);
+      if (tokenResult.claims.role === "authenticated") {
+        console.log(
+          `[AuthService] Custom claims found: role=${tokenResult.claims.role}, app_role=${tokenResult.claims.app_role}`,
+        );
         return tokenResult;
       }
       // Wait 1 second before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       attempts++;
     }
     console.warn("Timeout waiting for 'authenticated' claim. RLS might fail.");
@@ -52,7 +57,11 @@ export class AuthService {
    */
   static async login(email: string, password: string) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       return userCredential.user;
     } catch (error: any) {
       throw new Error(this.formatError(error.code));
@@ -64,7 +73,11 @@ export class AuthService {
    */
   static async register(email: string, password: string, fullName: string) {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const user = userCredential.user;
 
       // Update Firebase Profile
@@ -101,18 +114,18 @@ export class AuthService {
    */
   private static formatError(code: string): string {
     switch (code) {
-      case 'auth/user-not-found':
-      case 'auth/wrong-password':
-      case 'auth/invalid-credential':
-        return 'Invalid email or security key.';
-      case 'auth/email-already-in-use':
-        return 'This email is already registered.';
-      case 'auth/weak-password':
-        return 'Security key is too weak.';
-      case 'auth/popup-closed-by-user':
-        return 'Login cancelled.';
+      case "auth/user-not-found":
+      case "auth/wrong-password":
+      case "auth/invalid-credential":
+        return "Invalid email or security key.";
+      case "auth/email-already-in-use":
+        return "This email is already registered.";
+      case "auth/weak-password":
+        return "Security key is too weak.";
+      case "auth/popup-closed-by-user":
+        return "Login cancelled.";
       default:
-        return 'Authentication failed. Please try again.';
+        return "Authentication failed. Please try again.";
     }
   }
 }

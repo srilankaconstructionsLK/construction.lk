@@ -1,10 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { auth, db } from "@/lib/firebase/firebase";
+import { UserProfile, UserService } from "@/services/supabase/UserService";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, deleteDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { UserService, UserProfile } from "@/services/supabase/UserService";
+import { deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -40,22 +47,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const refreshAuthToken = useCallback(async (firebaseUser: User) => {
-    try {
-      // Force refresh — updates cache with latest claims
-      await firebaseUser.getIdToken(true);
-      const decodedToken = await firebaseUser.getIdTokenResult();
-      const role = (decodedToken.claims.app_role as string) || "customer";
+  const refreshAuthToken = useCallback(
+    async (firebaseUser: User) => {
+      try {
+        // Force refresh — updates cache with latest claims
+        await firebaseUser.getIdToken(true);
+        const decodedToken = await firebaseUser.getIdTokenResult();
+        const role = (decodedToken.claims.app_role as string) || "customer";
 
-      console.log("[Auth] Claims:", decodedToken.claims);
-      setAppRole(role);
+        console.log("[Auth] Claims:", decodedToken.claims);
+        setAppRole(role);
 
-      // Fetch profile after token is fresh — Supabase client will use new token
-      await fetchProfile(firebaseUser.uid);
-    } catch (error) {
-      console.error("[Auth] Error refreshing token:", error);
-    }
-  }, [fetchProfile]);
+        // Fetch profile after token is fresh — Supabase client will use new token
+        await fetchProfile(firebaseUser.uid);
+      } catch (error) {
+        console.error("[Auth] Error refreshing token:", error);
+      }
+    },
+    [fetchProfile],
+  );
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -83,9 +93,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 console.error("[Auth] Error deleting signal:", error);
               }
             }
-          }
+          },
         );
-
       } else {
         setUser(null);
         setProfile(null);

@@ -1,8 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAppSelector } from '@/redux/hooks';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
@@ -11,7 +10,7 @@ interface SearchResultSidebarAdsProps {
 }
 
 export const SearchResultSidebarAds = ({ categoryId }: SearchResultSidebarAdsProps) => {
-  const { ads } = useSelector((state: RootState) => state.ads);
+  const { ads } = useAppSelector((state) => state.ads);
 
   const filteredAds = ads.filter(ad => 
     ad.placement === 'search_result_banner' && 

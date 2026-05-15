@@ -1,31 +1,23 @@
-import { getBusinessById } from "@/services/business";
-import { createBrowserClient } from "@supabase/ssr";
-import CIDABadge from "@/components/business/CIDABadge";
-import SubscriptionBadge from "@/components/business/SubscriptionBadge";
-import { 
-  MapPin, 
-  Phone, 
-  Globe, 
-  Mail, 
-  Star, 
-  BadgeCheck, 
-  ChevronLeft, 
-  ChevronRight, 
-  QrCode, 
-  MessageSquare, 
-  Send,
-  FileText,
-  ShieldCheck,
-  Building2,
-  Calendar,
-  Eye,
-  Share2,
-  LayoutGrid,
-  Briefcase
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MOCK_BUSINESSES } from "@/data/mock-businesses";
+import { BusinessService } from "@/services/supabase/BusinessService";
+import type { Database } from "@/types/supabase";
+import { createBrowserClient } from "@supabase/ssr";
+import {
+  BadgeCheck,
+  Briefcase,
+  Eye,
+  FileText,
+  LayoutGrid,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  QrCode,
+  Share2,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -33,41 +25,58 @@ import { BusinessProfileHero } from "@/components/business/BusinessProfileHero";
 import { BusinessProfileSideAd } from "@/components/business/BusinessProfileSideAd";
 
 // Server-side supabase client for public data
-const supabaseAdmin = createBrowserClient(
+const supabaseAdmin = createBrowserClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  let business = MOCK_BUSINESSES.find(b => b.id === id) as any;
-  
+  let business = MOCK_BUSINESSES.find((b) => b.id === id) as any;
+
   if (!business) {
-    business = await getBusinessById(supabaseAdmin, id);
+    business = await BusinessService.getBusinessById(supabaseAdmin, id);
   }
 
   return {
     title: `${business?.title || "Business"} | Construction.lk`,
-    description: business?.description?.substring(0, 160) || "Construction business profile",
+    description:
+      business?.description?.substring(0, 160) ||
+      "Construction business profile",
   };
 }
 
-export default async function BusinessProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BusinessProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  
-  let business = MOCK_BUSINESSES.find(b => b.id === id) as any;
+
+  let business = MOCK_BUSINESSES.find((b) => b.id === id) as any;
 
   if (!business) {
-    business = await getBusinessById(supabaseAdmin, id);
+    business = await BusinessService.getBusinessById(supabaseAdmin, id);
   }
 
   if (!business) {
     return (
       <div className="py-40 text-center space-y-4">
-        <h2 className="text-2xl font-black text-secondary uppercase tracking-tight">Business not found.</h2>
-        <p className="text-secondary/40 text-sm">The ID "{id}" does not exist in our industrial database.</p>
+        <h2 className="text-2xl font-black text-secondary uppercase tracking-tight">
+          Business not found.
+        </h2>
+        <p className="text-secondary/40 text-sm">
+          The ID "{id}" does not exist in our industrial database.
+        </p>
         <Link href="/search">
-          <Button variant="outline" className="mt-4 border-surface-variant text-secondary font-black uppercase text-[10px] tracking-widest px-8 h-12">
+          <Button
+            variant="outline"
+            className="mt-4 border-surface-variant text-secondary font-black uppercase text-[10px] tracking-widest px-8 h-12"
+          >
             Return to Search
           </Button>
         </Link>
@@ -75,9 +84,17 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
     );
   }
 
-  const logo = business.profile_images_info?.logo_url || "https://via.placeholder.com/200?text=Logo";
-  const cover = business.profile_images_info?.cover_url || "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=2070";
-  const gallery = business.profile_images_info?.gallery || [cover, cover, cover];
+  const logo =
+    business.profile_images_info?.logo_url ||
+    "https://via.placeholder.com/200?text=Logo";
+  const cover =
+    business.profile_images_info?.cover_url ||
+    "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=2070";
+  const gallery = business.profile_images_info?.gallery || [
+    cover,
+    cover,
+    cover,
+  ];
 
   return (
     <div className="min-h-screen bg-surface pb-24">
@@ -124,9 +141,13 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 <span>{business.city}</span>
                 <div className="h-4 w-px bg-surface-variant" />
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${business.is_open ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className={`${business.is_open ? 'text-green-500' : 'text-red-500'} uppercase font-bold tracking-wider`}>
-                    {business.is_open ? 'Open' : 'Closed'}
+                  <div
+                    className={`w-2 h-2 rounded-full ${business.is_open ? "bg-green-500" : "bg-red-500"}`}
+                  />
+                  <span
+                    className={`${business.is_open ? "text-green-500" : "text-red-500"} uppercase font-bold tracking-wider`}
+                  >
+                    {business.is_open ? "Open" : "Closed"}
                   </span>
                 </div>
               </div>
@@ -142,10 +163,16 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 <Button className="bg-[#00a651] hover:bg-[#008f45] text-white font-bold h-10 px-6 rounded-md flex items-center gap-2">
                   <Phone className="w-4 h-4" /> +94777489200
                 </Button>
-                <Button variant="outline" className="border-surface-variant text-secondary font-bold h-10 px-6 rounded-md flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="border-surface-variant text-secondary font-bold h-10 px-6 rounded-md flex items-center gap-2"
+                >
                   <MessageSquare className="w-4 h-4" /> Chat
                 </Button>
-                <Button variant="outline" className="border-surface-variant text-secondary font-bold h-10 px-6 rounded-md flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="border-surface-variant text-secondary font-bold h-10 px-6 rounded-md flex items-center gap-2"
+                >
                   <Mail className="w-4 h-4" /> Inquiry
                 </Button>
               </div>
@@ -160,20 +187,22 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
             {/* Tabbed Navigation (High-Fidelity) */}
             <div className="bg-white border border-surface-variant rounded-md p-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar">
               {[
-                { name: 'Gallery', icon: LayoutGrid },
-                { name: 'Services', icon: Briefcase },
-                { name: 'Projects', icon: ShieldCheck },
-                { name: 'Reviews', icon: Star },
+                { name: "Gallery", icon: LayoutGrid },
+                { name: "Services", icon: Briefcase },
+                { name: "Projects", icon: ShieldCheck },
+                { name: "Reviews", icon: Star },
               ].map((tab, i) => (
-                <button 
+                <button
                   key={tab.name}
                   className={`flex items-center gap-3 px-6 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap rounded-sm ${
-                    i === 0 
-                    ? 'bg-[#53616a] text-white shadow-md' 
-                    : 'text-[#8b5e3c] hover:bg-surface transition-colors'
+                    i === 0
+                      ? "bg-[#53616a] text-white shadow-md"
+                      : "text-[#8b5e3c] hover:bg-surface transition-colors"
                   }`}
                 >
-                  <tab.icon className={`w-4 h-4 ${i === 0 ? 'text-white' : 'text-[#8b5e3c]'}`} />
+                  <tab.icon
+                    className={`w-4 h-4 ${i === 0 ? "text-white" : "text-[#8b5e3c]"}`}
+                  />
                   {tab.name}
                 </button>
               ))}
@@ -182,8 +211,16 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
             {/* Gallery Grid (Active Tab Content) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {gallery.map((img: string, i: number) => (
-                <div key={i} className="relative aspect-[16/10] bg-surface-variant group overflow-hidden border border-surface-variant">
-                  <Image src={img} alt={`Gallery ${i}`} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div
+                  key={i}
+                  className="relative aspect-[16/10] bg-surface-variant group overflow-hidden border border-surface-variant"
+                >
+                  <Image
+                    src={img}
+                    alt={`Gallery ${i}`}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
                 </div>
               ))}
             </div>
@@ -196,26 +233,43 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
               </h2>
               <div className="bg-white border border-surface-variant p-8 md:p-10">
                 <p className="text-secondary/60 leading-relaxed text-sm font-medium">
-                  {business.description || "No description available for this business."}
+                  {business.description ||
+                    "No description available for this business."}
                 </p>
-                
+
                 {/* Secondary Info Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-12 border-t border-surface">
                   <div className="space-y-1">
-                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">Established</div>
-                    <div className="text-sm font-black text-secondary">{business.year_established || "N/A"}</div>
+                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">
+                      Established
+                    </div>
+                    <div className="text-sm font-black text-secondary">
+                      {business.year_established || "N/A"}
+                    </div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">BR Number</div>
-                    <div className="text-sm font-black text-secondary">{business.br_number || "Pending"}</div>
+                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">
+                      BR Number
+                    </div>
+                    <div className="text-sm font-black text-secondary">
+                      {business.br_number || "Pending"}
+                    </div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">VAT Status</div>
-                    <div className="text-sm font-black text-secondary">{business.is_vat_registered ? "Registered" : "Non-VAT"}</div>
+                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">
+                      VAT Status
+                    </div>
+                    <div className="text-sm font-black text-secondary">
+                      {business.is_vat_registered ? "Registered" : "Non-VAT"}
+                    </div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">Coverage</div>
-                    <div className="text-sm font-black text-secondary">{business.service_districts?.length || 1} Districts</div>
+                    <div className="text-[10px] font-black text-secondary/30 uppercase tracking-widest">
+                      Coverage
+                    </div>
+                    <div className="text-sm font-black text-secondary">
+                      {business.service_districts?.length || 1} Districts
+                    </div>
                   </div>
                 </div>
               </div>
@@ -229,7 +283,10 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
               </h2>
               <div className="flex flex-wrap gap-3">
                 {business.tags?.map((tag: string) => (
-                  <div key={tag} className="bg-white border-2 border-surface-variant px-6 py-3 text-[10px] font-black uppercase tracking-widest text-secondary hover:border-primary-container transition-colors cursor-default">
+                  <div
+                    key={tag}
+                    className="bg-white border-2 border-surface-variant px-6 py-3 text-[10px] font-black uppercase tracking-widest text-secondary hover:border-primary-container transition-colors cursor-default"
+                  >
                     {tag}
                   </div>
                 ))}
@@ -244,16 +301,33 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {(business.reviews || []).map((rev: any) => (
-                  <div key={rev.id} className="bg-white border border-surface-variant p-6 space-y-4">
+                  <div
+                    key={rev.id}
+                    className="bg-white border border-surface-variant p-6 space-y-4"
+                  >
                     <div className="flex items-center gap-1 text-yellow-500">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={12} className={i < rev.rating ? "fill-current" : "text-surface-variant"} />
+                        <Star
+                          key={i}
+                          size={12}
+                          className={
+                            i < rev.rating
+                              ? "fill-current"
+                              : "text-surface-variant"
+                          }
+                        />
                       ))}
                     </div>
-                    <p className="text-xs font-medium text-secondary/60 italic leading-relaxed">"{rev.comment}"</p>
+                    <p className="text-xs font-medium text-secondary/60 italic leading-relaxed">
+                      "{rev.comment}"
+                    </p>
                     <div className="pt-4 border-t border-surface flex items-center justify-between">
-                      <div className="text-[10px] font-black text-secondary uppercase tracking-widest">- {rev.author}</div>
-                      <div className="text-[10px] font-bold text-secondary/30 uppercase">{rev.company}</div>
+                      <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                        - {rev.author}
+                      </div>
+                      <div className="text-[10px] font-bold text-secondary/30 uppercase">
+                        {rev.company}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -274,7 +348,9 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 <div className="relative w-44 h-44 bg-white p-4 shadow-sm">
                   <QrCode size={144} className="text-secondary" />
                 </div>
-                <div className="text-[11px] font-black text-secondary uppercase tracking-[0.2em]">Scan to view profile</div>
+                <div className="text-[11px] font-black text-secondary uppercase tracking-[0.2em]">
+                  Scan to view profile
+                </div>
               </div>
 
               {/* Contact Details Section */}
@@ -284,9 +360,12 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                     <MapPin className="w-5 h-5 text-secondary/40 shrink-0 mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-secondary leading-snug">
-                        {business.contact_info?.address || "123 Builder's Way, Industrial Zone, Cityville, 40001"}
+                        {business.contact_info?.address ||
+                          "123 Builder's Way, Industrial Zone, Cityville, 40001"}
                       </p>
-                      <button className="text-sm font-bold text-[#3b82f6] hover:underline">Get Directions</button>
+                      <button className="text-sm font-bold text-[#3b82f6] hover:underline">
+                        Get Directions
+                      </button>
                     </div>
                   </div>
                   {/* Small Map Thumbnail */}
@@ -300,31 +379,38 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
 
                 <div className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-secondary/40 shrink-0" />
-                  <p className="text-sm font-medium text-secondary">{business.contact_info?.phone || "+1-800-BUILDER"}</p>
+                  <p className="text-sm font-medium text-secondary">
+                    {business.contact_info?.phone || "+1-800-BUILDER"}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-secondary/40 shrink-0" />
-                  <p className="text-sm font-medium text-secondary break-all">{business.contact_info?.email || "contact@apexconstruction.com"}</p>
+                  <p className="text-sm font-medium text-secondary break-all">
+                    {business.contact_info?.email ||
+                      "contact@apexconstruction.com"}
+                  </p>
                 </div>
               </div>
 
               {/* Lead Generation Form */}
               <div className="p-8 space-y-6 text-left">
-                <h3 className="text-lg font-bold text-secondary">Lead Generation</h3>
+                <h3 className="text-lg font-bold text-secondary">
+                  Lead Generation
+                </h3>
                 <div className="space-y-4">
-                  <input 
-                    type="text" 
-                    placeholder="Your Name" 
+                  <input
+                    type="text"
+                    placeholder="Your Name"
                     className="w-full h-12 px-4 rounded-md border border-surface-variant bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-container"
                   />
-                  <input 
-                    type="text" 
-                    placeholder="Mobile Number" 
+                  <input
+                    type="text"
+                    placeholder="Mobile Number"
                     className="w-full h-12 px-4 rounded-md border border-surface-variant bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-container"
                   />
-                  <textarea 
-                    placeholder="Message" 
+                  <textarea
+                    placeholder="Message"
                     rows={4}
                     className="w-full px-4 py-3 rounded-md border border-surface-variant bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-container"
                   />
@@ -340,8 +426,12 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-8 h-8 text-green-600" />
                 <div className="space-y-0.5 text-left">
-                  <div className="text-xs font-black text-secondary uppercase tracking-widest">Verified Supplier</div>
-                  <div className="text-[10px] text-secondary/40 font-medium">Verified by Construction.lk Network</div>
+                  <div className="text-xs font-black text-secondary uppercase tracking-widest">
+                    Verified Supplier
+                  </div>
+                  <div className="text-[10px] text-secondary/40 font-medium">
+                    Verified by Construction.lk Network
+                  </div>
                 </div>
               </div>
               <BadgeCheck className="w-6 h-6 text-blue-500 fill-current" />
@@ -357,11 +447,28 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
         {/* Simple Bottom Footer for Profile */}
         <div className="mt-24 pt-12 border-t border-surface-variant flex flex-col md:flex-row items-center justify-between gap-8 text-[10px] font-black uppercase tracking-widest text-secondary/30">
           <div className="flex items-center gap-8">
-            <Link href="/about" className="hover:text-secondary transition-colors">About Us</Link>
-            <Link href="/contact" className="hover:text-secondary transition-colors">Contact</Link>
-            <Link href="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
+            <Link
+              href="/about"
+              className="hover:text-secondary transition-colors"
+            >
+              About Us
+            </Link>
+            <Link
+              href="/contact"
+              className="hover:text-secondary transition-colors"
+            >
+              Contact
+            </Link>
+            <Link
+              href="/privacy"
+              className="hover:text-secondary transition-colors"
+            >
+              Privacy Policy
+            </Link>
           </div>
-          <div>© {new Date().getFullYear()} Construction.lk Industrial Network</div>
+          <div>
+            © {new Date().getFullYear()} Construction.lk Industrial Network
+          </div>
         </div>
       </div>
     </div>

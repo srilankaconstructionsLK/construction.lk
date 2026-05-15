@@ -1,19 +1,9 @@
 import { supabase } from '@/lib/supabase/client';
+import type { Database } from '@/types/supabase';
 
-export interface UserProfile {
-  id: string;
-  email: string | null;
-  name: string | null;
-  role: string;
-  gender?: string;
-  phone?: string;
-  address?: string;
-  profile_picture_url?: string;
-  city?: string;
-  verified?: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export type UserProfile = Database["public"]["Tables"]["profiles"]["Row"];
+type UserProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
+type UserProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 
 export class UserService {
   /**
@@ -37,10 +27,10 @@ export class UserService {
   /**
    * Create a new user profile
    */
-  static async createProfile(profile: Partial<UserProfile>) {
+  static async createProfile(profile: UserProfileInsert) {
     const { data, error } = await supabase
       .from('profiles')
-      .insert([profile])
+      .insert(profile)
       .select()
       .single();
 
@@ -51,7 +41,7 @@ export class UserService {
   /**
    * Update an existing profile
    */
-  static async updateProfile(id: string, updates: Partial<UserProfile>) {
+  static async updateProfile(id: string, updates: UserProfileUpdate) {
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)

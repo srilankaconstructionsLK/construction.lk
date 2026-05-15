@@ -1,8 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAppSelector } from '@/redux/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -14,7 +13,7 @@ interface BusinessProfileHeroProps {
 }
 
 export const BusinessProfileHero = ({ gallery }: BusinessProfileHeroProps) => {
-  const { ads } = useSelector((state: RootState) => state.ads);
+  const { ads } = useAppSelector((state) => state.ads);
   const cover = "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=1200";
   
   // Find a relevant ad

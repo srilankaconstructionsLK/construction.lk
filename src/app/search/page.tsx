@@ -2,8 +2,7 @@
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/redux/store';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setQuery } from '@/redux/slices/searchSlice';
 import { hydrateLocation, setLocationWithPersist } from '@/redux/slices/locationSlice';
 import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
@@ -51,9 +50,9 @@ const mockResults = MOCK_BUSINESSES.map(b => ({
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { query } = useSelector((state: RootState) => state.search);
-  const { selectedLocation: location } = useSelector((state: RootState) => state.location);
+  const dispatch = useAppDispatch();
+  const { query } = useAppSelector((state) => state.search);
+  const { selectedLocation: location } = useAppSelector((state) => state.location);
   
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);

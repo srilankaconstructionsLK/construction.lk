@@ -1,27 +1,33 @@
+// src/components/location-picker-modal.tsx
 "use client";
 
-import { ChevronRight, MapPin, Search, ArrowLeft, X } from "lucide-react";
+import { ChevronRight, MapPin, Search, ArrowLeft, X, Loader2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/redux/store';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setLocationWithPersist, District } from '@/redux/slices/locationSlice';
 import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
 
 export const LocationPickerModal = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { selectedLocation: currentLocation, districts } = useSelector((state: RootState) => state.location);
-  const { isLocationPickerOpen: isOpen } = useSelector((state: RootState) => state.ui);
+  const dispatch = useAppDispatch();
+  const { selectedLocation: currentLocation, districts, loading: districtsLoading } = useAppSelector((state) => state.location);
+  const { isLocationPickerOpen: isOpen } = useAppSelector((state) => state.ui);
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
+  const [selectedDistrictName, setSelectedDistrictName] = useState<string | null>(null);
   const [showCitiesMobile, setShowCitiesMobile] = useState(false);
 
-  // Sync selectedDistrict with districts when they load or modal opens
+  // Derive the active district object from the Redux store
+  const selectedDistrict = useMemo(() => {
+    if (!selectedDistrictName) return districts[0] || null;
+    return districts.find(d => d.name === selectedDistrictName) || districts[0] || null;
+  }, [selectedDistrictName, districts]);
+
+  // Sync selection when modal opens
   useEffect(() => {
-    if (isOpen && districts.length > 0 && !selectedDistrict) {
-      setSelectedDistrict(districts[0]);
+    if (isOpen && districts.length > 0 && !selectedDistrictName) {
+      setSelectedDistrictName(districts[0].name);
     }
-  }, [isOpen, districts, selectedDistrict]);
+  }, [isOpen, districts, selectedDistrictName]);
 
   // Search logic
   const searchResults = useMemo(() => {
@@ -56,7 +62,7 @@ export const LocationPickerModal = () => {
       <div className="absolute inset-0 bg-secondary/80 backdrop-blur-sm" onClick={onClose} />
       
       {/* Modal Container */}
-      <div className="relative w-full max-w-2xl bg-white rounded-sm shadow-2xl border border-surface-variant flex flex-col h-[600px] overflow-hidden">
+      <div className="relative w-full max-w-2xl bg-white rounded-sm shadow-2xl border border-surface-variant flex flex-col h-[90vh] max-h-[600px] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant bg-white">
           <div>
@@ -83,19 +89,25 @@ export const LocationPickerModal = () => {
               <span className="text-[10px] font-black text-primary-container uppercase tracking-widest">All Sri Lanka</span>
             </button>
 
-            {districts.map((district) => (
-              <button
-                key={district.name}
-                onClick={() => {
-                  setSelectedDistrict(district);
-                  setShowCitiesMobile(true);
-                }}
-                className={`flex items-center justify-between px-6 py-3 border-b border-surface-variant hover:bg-white transition-all text-left ${selectedDistrict?.name === district.name ? "bg-white border-r-4 border-r-primary-container" : ""}`}
-              >
-                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedDistrict?.name === district.name ? "text-secondary" : "text-secondary/50"}`}>{district.name}</span>
-                <ChevronRight size={14} className={selectedDistrict?.name === district.name ? "text-primary-container" : "text-secondary/20"} />
-              </button>
-            ))}
+            {districtsLoading ? (
+              <div className="flex-1 flex items-center justify-center py-12">
+                <Loader2 className="w-5 h-5 text-secondary/20 animate-spin" />
+              </div>
+            ) : (
+              districts.map((district) => (
+                <button
+                  key={district.name}
+                  onClick={() => {
+                    setSelectedDistrictName(district.name);
+                    setShowCitiesMobile(true);
+                  }}
+                  className={`flex items-center justify-between px-6 py-3 border-b border-surface-variant hover:bg-white transition-all text-left ${selectedDistrict?.name === district.name ? "bg-white border-r-4 border-r-primary-container" : ""}`}
+                >
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${selectedDistrict?.name === district.name ? "text-secondary" : "text-secondary/50"}`}>{district.name}</span>
+                  <ChevronRight size={14} className={selectedDistrict?.name === district.name ? "text-primary-container" : "text-secondary/20"} />
+                </button>
+              ))
+            )}
           </div>
 
           {/* Cities / Search Area */}
@@ -113,10 +125,10 @@ export const LocationPickerModal = () => {
                 <input 
                   autoFocus
                   type="text"
-                  placeholder="SEARCH CITY OR DISTRICT..."
+                  placeholder="Search city or district..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-surface border border-surface-variant rounded-sm text-[10px] font-black uppercase tracking-widest text-secondary focus:outline-none focus:border-primary-container transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-surface border border-surface-variant rounded-sm text-[10px] font-black tracking-widest text-secondary focus:outline-none focus:border-primary-container transition-all"
                 />
               </div>
             </div>

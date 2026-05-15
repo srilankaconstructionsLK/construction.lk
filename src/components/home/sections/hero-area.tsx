@@ -6,8 +6,7 @@ import { Search, MapPin, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
 import { setQuery } from '@/redux/slices/searchSlice';
 import { useRouter } from 'next/navigation';
@@ -17,10 +16,10 @@ const popularSearches = [
 ];
 
 export function HeroArea() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
-  const { selectedLocation: location } = useSelector((state: RootState) => state.location);
-  const { query } = useSelector((state: RootState) => state.search);
+  const { selectedLocation: location } = useAppSelector((state) => state.location);
+  const { query } = useAppSelector((state) => state.search);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
