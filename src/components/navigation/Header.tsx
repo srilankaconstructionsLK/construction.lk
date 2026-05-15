@@ -13,6 +13,8 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setQuery } from '@/redux/slices/searchSlice';
 import { setLocationPickerOpen } from '@/redux/slices/uiSlice';
 
+import { NotificationDropdown } from "@/components/navigation/NotificationDropdown";
+
 export function Header() {
   const { user, loading } = useAuth();
   const dispatch = useAppDispatch();
@@ -84,10 +86,7 @@ export function Header() {
             </div>
           ) : user ? (
             <div className="flex items-center gap-6">
-              <button className="relative p-2 text-secondary hover:bg-surface-variant/30 rounded-full transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-primary-container border-2 border-white rounded-full"></span>
-              </button>
+              <NotificationDropdown />
               <div className="w-px h-6 bg-surface-variant"></div>
               <UserNav />
             </div>

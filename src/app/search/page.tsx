@@ -27,7 +27,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MainLayout } from "@/components/layouts/main-layout";
 import { SearchResultCarousel } from '@/components/ads/SearchResultCarousel';
 import { SearchResultSidebarAds } from '@/components/ads/SearchResultSidebarAds';
-import { BusinessCardList } from '@/components/search/BusinessCardList';
+import BusinessCard from '@/components/business/BusinessCard';
 
 import { MOCK_BUSINESSES } from '@/data/mock-businesses';
 
@@ -210,95 +210,11 @@ function SearchContent() {
               <div className={`grid gap-8 ${viewType === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
                 <AnimatePresence mode="wait">
                   {mockResults.map((item, idx) => (
-                    viewType === 'list' ? (
-                      <BusinessCardList key={item.id} item={item} />
-                    ) : (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        onClick={() => router.push(`/business/${item.id}`)}
-                        className="bg-white rounded-xl border border-surface-variant overflow-hidden group hover:shadow-2xl hover:shadow-secondary/10 transition-all duration-500 flex flex-col cursor-pointer"
-                      >
-                        <div className="relative h-60 overflow-hidden">
-                          <Image 
-                            src={item.image} 
-                            alt={item.title} 
-                            fill 
-                            className="object-cover group-hover:scale-105 transition-transform duration-700" 
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-secondary/80 via-transparent to-transparent opacity-60" />
-                          
-                          {/* Status Badges */}
-                          <div className="absolute top-4 left-4 flex flex-col gap-2">
-                            {item.subscription_plan === 'enterprise' && (
-                              <div className="bg-primary-container text-white px-3 py-1.5 rounded-sm text-[9px] font-black uppercase tracking-[0.2em] shadow-lg flex items-center">
-                                <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Enterprise Partner
-                              </div>
-                            )}
-                            {item.verified && (
-                              <div className="bg-white/90 backdrop-blur-md text-secondary px-3 py-1.5 rounded-sm text-[9px] font-black uppercase tracking-[0.2em] shadow-lg flex items-center w-fit">
-                                <BadgeCheck className="w-3.5 h-3.5 mr-1.5 text-primary-container" /> Verified
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="absolute top-4 right-4 bg-secondary text-primary-container px-3 py-1.5 rounded-sm font-black text-[10px] uppercase tracking-widest shadow-lg border border-primary-container/20">
-                            CIDA {item.cida_grading}
-                          </div>
-
-                          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                              <span className="text-white text-sm font-black">{item.rating}</span>
-                              <span className="text-white/60 text-[10px] font-bold">({item.review_count} REVIEWS)</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-8 flex-1 flex flex-col">
-                          <div className="flex items-start justify-between gap-4 mb-4">
-                            <div>
-                              <h3 className="text-xl font-black text-secondary uppercase tracking-tight group-hover:text-primary-container transition-colors leading-none mb-2">
-                                {item.title}
-                              </h3>
-                              <p className="flex items-center text-[10px] font-bold text-secondary/40 uppercase tracking-widest">
-                                <MapPin className="w-3.5 h-3.5 mr-2 text-primary-container" /> {item.city}, {item.district}
-                              </p>
-                            </div>
-                          </div>
-
-                          <p className="text-secondary/60 text-xs font-medium leading-relaxed mb-8 line-clamp-2">
-                            {item.description}
-                          </p>
-
-                          <div className="flex flex-wrap gap-2 mb-8">
-                            {item.tags.map(tag => (
-                              <span key={tag} className="px-3 py-1.5 bg-surface rounded-sm text-[9px] font-black text-secondary/40 uppercase tracking-widest border border-surface-variant/50">
-                                #{tag}
-                              </span>
-                            ))} 
-                          </div>
-
-                          <div className="pt-8 border-t border-surface-variant mt-auto flex items-center gap-4">
-                            <Button 
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex-1 bg-secondary hover:bg-primary-container text-white font-black uppercase text-[10px] tracking-[0.2em] h-12 transition-all"
-                            >
-                              View Profile
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              onClick={(e) => e.stopPropagation()}
-                              className="border-surface-variant hover:bg-surface text-secondary font-black uppercase text-[10px] tracking-[0.2em] h-12 w-12 p-0"
-                            >
-                              <ChevronRight className="w-5 h-5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )
+                    <BusinessCard 
+                      key={item.id} 
+                      business={item} 
+                      variant={viewType} 
+                    />
                   ))}
                 </AnimatePresence>
               </div>

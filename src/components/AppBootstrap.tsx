@@ -38,13 +38,13 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
       return;
     }
 
-    console.log(`[AppBootstrap] User session detected: ${user.id}. Initializing user-specific services...`);
+    console.log(`[AppBootstrap] User session detected: ${user.uid}. Initializing user-specific services...`);
 
     // TODO: Add auth-dependent initializations here in the future
-    // e.g., startNotificationSync(user.id), identifyAnalyticsUser(user), etc.
+    // e.g., startNotificationSync(user.uid), identifyAnalyticsUser(user), etc.
 
     return () => {
-      console.log(`[AppBootstrap] Cleaning up user-specific services for: ${user.id}`);
+      console.log(`[AppBootstrap] Cleaning up user-specific services for: ${user.uid}`);
       // Clean up auth-dependent subscriptions
     };
   }, [dispatch, user]);
