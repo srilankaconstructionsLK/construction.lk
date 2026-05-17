@@ -94,12 +94,33 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { CategoryService, Category } from "@/services/supabase/CategoryService";
+import { LocationService, District } from "@/services/supabase/LocationService";
+import { HydrateCategories } from "@/components/common/HydrateCategories";
+import { HydrateLocations } from "@/components/common/HydrateLocations";
 
-export default function RootLayout({
+// ISR: Revalidate the global shell data every 1 hour
+export const revalidate = 3600;
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let categories: Category[] = [];
+  let districts: District[] = [];
+
+  try {
+    const [catData, locData] = await Promise.all([
+      CategoryService.getCategoriesHierarchy(),
+      LocationService.getLocationsHierarchy(),
+    ]);
+    categories = catData;
+    districts = locData;
+  } catch (error) {
+    console.error("Error pre-fetching data in RootLayout:", error);
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -110,6 +131,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReduxProvider>
+            <HydrateCategories categories={categories} />
+            <HydrateLocations districts={districts} />
             <AuthProvider>
               <AppBootstrap>
                 {children}

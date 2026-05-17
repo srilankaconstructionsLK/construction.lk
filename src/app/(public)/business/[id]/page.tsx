@@ -107,7 +107,7 @@ export default async function BusinessProfilePage({
             {/* Logo Box - Overlapping and Black as per SS */}
             <div className="h-44 w-44 shrink-0 bg-black border-4 border-white shadow-lg -mt-16 z-20 relative flex items-center justify-center p-2">
               <div className="relative h-full w-full">
-                <Image src={logo} alt="Logo" fill className="object-contain" />
+                <Image src={logo} alt="Logo" fill className="object-contain" sizes="176px" />
               </div>
             </div>
 

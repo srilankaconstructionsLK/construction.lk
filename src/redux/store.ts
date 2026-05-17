@@ -6,6 +6,7 @@ import uiReducer from './slices/uiSlice';
 import searchReducer from './slices/searchSlice';
 import locationReducer from './slices/locationSlice';
 import adReducer from './slices/adSlice';
+import categoryReducer from './slices/categorySlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     search: searchReducer,
     location: locationReducer,
     ads: adReducer,
+    category: categoryReducer,
   },
 });
 

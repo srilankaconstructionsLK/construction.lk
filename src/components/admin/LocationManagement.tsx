@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { LocationService, District } from "@/services/supabase/LocationService";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchLocationsAsync } from "@/redux/slices/locationSlice";
 
 // Sub-components
 import { LocationManagementHeader } from "./location-management/LocationManagementHeader";
@@ -14,6 +15,7 @@ import { LocationManagementCityManager } from "./location-management/LocationMan
 type NoticeType = "success" | "error" | "info";
 
 export function LocationManagement() {
+  const dispatch = useAppDispatch();
   const { districts: reduxDistricts, loading: reduxLoading } = useAppSelector((state) => state.location);
   
   const [districts, setDistricts] = useState<District[]>([]);
@@ -172,6 +174,7 @@ export function LocationManagement() {
     try {
       setIsPublishing(true);
       await LocationService.updateLocationsAggregation(districts, new Set(dirtyDistricts));
+      dispatch(fetchLocationsAsync());
       setDirtyDistricts(new Set());
       setHasUnsavedChanges(false);
       setInfo("success", "Location hierarchy published successfully.");

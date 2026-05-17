@@ -1,5 +1,6 @@
-// src/services/supabase/LocationService.ts
+import { cache } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { createStaticClient } from "@/lib/supabase/static";
 
 export type District = {
   id?: string;
@@ -7,13 +8,23 @@ export type District = {
   cities: string[];
 };
 
+interface DistrictQueryRow {
+  id: string;
+  name: string;
+  cities: {
+    name: string;
+  }[];
+}
+
 export class LocationService {
   /**
    * Fetches the entire location hierarchy from Supabase.
    * Maps normalized tables back to the District[] structure used by the UI.
+   * ✅ Wrapped in React cache() with zero arguments for a 100% stable cache key.
+   * ✅ Instantiates createStaticClient() internally to ensure clean server-side queries.
    */
-  static async getLocationsHierarchy(): Promise<District[]> {
-    console.log("[LocationService] Fetching hierarchy...");
+  static getLocationsHierarchy = cache(async (): Promise<District[]> => {
+    const supabase = createStaticClient();
     const { data, error } = await supabase
       .from("districts")
       .select(`
@@ -30,12 +41,14 @@ export class LocationService {
       throw error;
     }
 
-    return (data || []).map((d: any) => ({
+    const rows = (data || []) as unknown as DistrictQueryRow[];
+
+    return rows.map((d) => ({
       id: d.id,
       name: d.name,
-      cities: d.cities.map((c: any) => c.name).sort(),
+      cities: d.cities.map((c) => c.name).sort(),
     }));
-  }
+  });
 
   /**
    * Reconciles the local District[] state with the database.
@@ -103,34 +116,5 @@ export class LocationService {
         .in("id", idsToDelete);
       if (error) throw error;
     }
-  }
-
-  /**
-   * Legacy wrapper for real-time (not strictly needed for cities but kept for compatibility)
-   */
-  static listenToLocationsAggregation(callback: (districts: District[]) => void) {
-    // Initial fetch
-    this.getLocationsHierarchy().then(callback);
-    
-    let debounceTimer: NodeJS.Timeout | null = null;
-
-    const refreshData = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        this.getLocationsHierarchy().then(callback);
-      }, 300); // Wait 300ms for changes to settle
-    };
-
-    // Set up a real-time listener on both tables
-    const channel = supabase
-      .channel('location-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'districts' }, refreshData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'cities' }, refreshData)
-      .subscribe();
-
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
   }
 }

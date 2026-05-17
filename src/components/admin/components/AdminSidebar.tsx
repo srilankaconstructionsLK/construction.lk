@@ -13,6 +13,7 @@ import {
   Users, 
   Grid, 
   MapPin, 
+  FolderTree,
   LogOut, 
   Megaphone,
   ChevronRight,
@@ -51,9 +52,9 @@ const sidebarItems = [
     icon: <Users className="w-5 h-5" />,
   },
   {
-    item: "Categories",
-    to: "/admin/create-category",
-    icon: <Grid className="w-5 h-5" />,
+    item: "Category Management",
+    to: "/admin/manage-categories",
+    icon: <FolderTree className="w-5 h-5" />,
   },
   {
     item: "Manage Cities",
@@ -110,6 +111,7 @@ export default function AdminSidebar({
                 alt="Construction.lk Logo" 
                 fill
                 className="object-contain"
+                sizes="160px"
               />
             </div>
           ) : (
@@ -119,6 +121,7 @@ export default function AdminSidebar({
                 alt="Construction.lk Icon" 
                 fill
                 className="object-contain"
+                sizes="32px"
               />
             </div>
           )}

@@ -48,6 +48,7 @@ export default function ProfilePage() {
             alt="Apex Facility" 
             fill
             className="object-cover opacity-30"
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/50 to-transparent" />
         </section>
@@ -139,7 +140,7 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {gallery.map((item, i) => (
                       <Card key={i} className="group relative aspect-video overflow-hidden border-none shadow-lg cursor-pointer">
-                        <Image src={item.image} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <Image src={item.image} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 768px) 100vw, 50vw" />
                         <div className="absolute inset-0 bg-gradient-to-t from-secondary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                           <p className="text-white font-bold text-xs uppercase tracking-widest">{item.title}</p>
                         </div>

@@ -48,15 +48,18 @@ Rules:
 
 ### 2. 🏛️ [[Architecture_Overview|Architecture]]
 - Deep dive into state management and modular design.
+- [[Architecture_State_Management|The 4-Pillar State Philosophy & SSR Hydration]]
 - [[Application_Bootstrap|Application Initialization Strategy]]
 - **Key Files**:
     - [searchSlice.ts](file:///home/senidu/PROJECTS/SLB/construction.lk/src/redux/slices/searchSlice.ts)
     - [locationSlice.ts](file:///home/senidu/PROJECTS/SLB/construction.lk/src/redux/slices/locationSlice.ts)
+    - [categorySlice.ts](file:///home/senidu/PROJECTS/SLB/construction.lk/src/redux/slices/categorySlice.ts)
     - [store.ts](file:///home/senidu/PROJECTS/SLB/construction.lk/src/redux/store.ts)
 
 ### 3. ✨ Feature Documentation
-- [[Location_Picker]]: Regional selection logic.
+- [[Location_Picker]]: Regional selection logic (JIT Realtime Sync).
 - [[Global_Search]]: Synchronized search query system.
+- [[Category_System]]: Category dictionary, SSR Hydration, and AllCategoriesModal.
 - [[Admin_BusinessList]]: Admin-side business listing page and operations.
 - [[Admin_Location_Management]]: Admin-side district/city management dashboard.
 

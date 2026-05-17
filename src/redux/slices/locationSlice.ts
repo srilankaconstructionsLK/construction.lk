@@ -9,12 +9,14 @@ interface LocationState {
   selectedLocation: string;
   districts: District[];
   loading: boolean;
+  lastFetched: number | null;
 }
 
 const initialState: LocationState = {
   selectedLocation: "All Sri Lanka",
   districts: [],
   loading: true,
+  lastFetched: null,
 };
 
 const locationSlice = createSlice({
@@ -27,6 +29,7 @@ const locationSlice = createSlice({
     setDistricts: (state, action: PayloadAction<District[]>) => {
       state.districts = action.payload;
       state.loading = false;
+      state.lastFetched = Date.now();
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -61,20 +64,17 @@ export const hydrateLocation = (): AppThunk => (dispatch) => {
 };
 
 /**
- * Thunk: Starts a real-time listener for location data from Supabase.
- * This keeps the Redux store in sync with the database for all users.
+ * Thunk: Fetches locations from Supabase and updates the store.
  */
-export const startLocationSync = (): AppThunk<() => void> => (dispatch, getState) => {
-  // Only set loading if we don't have districts yet to prevent flicker on re-init
-  if (getState().location.districts.length === 0) {
+export const fetchLocationsAsync = (): AppThunk => async (dispatch) => {
+  try {
     dispatch(setLoading(true));
-  }
-
-  const unsubscribe = LocationService.listenToLocationsAggregation((districts) => {
+    const districts = await LocationService.getLocationsHierarchy();
     dispatch(setDistricts(districts));
-  });
-
-  return unsubscribe;
+  } catch (error) {
+    console.error("Failed to fetch locations in Redux:", error);
+    dispatch(setLoading(false));
+  }
 };
 
 export default locationSlice.reducer;

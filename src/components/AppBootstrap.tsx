@@ -3,7 +3,7 @@
 
 import { useEffect, ReactNode } from "react";
 import { useAppDispatch } from "@/redux/hooks";
-import { hydrateLocation, startLocationSync } from "@/redux/slices/locationSlice";
+import { hydrateLocation } from "@/redux/slices/locationSlice";
 import { useAuth } from "@/context/AuthContext";
 
 /**
@@ -19,15 +19,11 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
   useEffect(() => {
     console.log("[AppBootstrap] Initializing global state...");
     
-    // Location: restore from localStorage + open realtime channel
+    // Location: restore from localStorage
     dispatch(hydrateLocation());
-    const unsubscribe = dispatch(startLocationSync());
 
     return () => {
       console.log("[AppBootstrap] Cleaning up global state subscriptions...");
-      if (typeof unsubscribe === "function") {
-        unsubscribe();
-      }
     };
   }, [dispatch]);
 
