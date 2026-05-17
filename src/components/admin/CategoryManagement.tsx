@@ -33,6 +33,7 @@ import { Category, CategoryService } from "@/services/supabase/CategoryService";
 import { toast } from "sonner";
 import Image from "next/image";
 import { cn, isDataStale } from "@/lib/utils";
+import { revalidateCategoriesAction } from "@/app/actions/revalidate";
 
 const CategoryCard = ({ 
   label, 
@@ -243,6 +244,7 @@ export function CategoryManagement() {
       }
       
       dispatch(fetchCategoriesAsync());
+      await revalidateCategoriesAction();
     } catch (error) {
       console.error(error);
       toast.error("Failed to save category");
@@ -279,6 +281,7 @@ export function CategoryManagement() {
       setNewSubPreview(null);
       toast.success("Subcategory added");
       dispatch(fetchCategoriesAsync());
+      await revalidateCategoriesAction();
     } catch (error) {
       toast.error("Failed to add sub-sector");
     } finally {
@@ -298,6 +301,7 @@ export function CategoryManagement() {
       }
       
       dispatch(fetchCategoriesAsync());
+      await revalidateCategoriesAction();
     } catch (error) {
       toast.error("Failed to delete category");
     }

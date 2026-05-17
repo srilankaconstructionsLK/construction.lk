@@ -62,6 +62,7 @@ Rules:
 - [[Category_System]]: Category dictionary, SSR Hydration, and AllCategoriesModal.
 - [[Admin_BusinessList]]: Admin-side business listing page and operations.
 - [[Admin_Location_Management]]: Admin-side district/city management dashboard.
+- [[Admin_Business_Creation]]: Admin-side premium profile onboarding and subscription wizard.
 
 ### 4. 🛠️ Technical Reference
 - [[Hydration_Mismatch_Fix]]: How we handled persistent state in SSR.

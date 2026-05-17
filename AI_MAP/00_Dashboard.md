@@ -14,6 +14,7 @@ Welcome to the **AI_MAP**. This vault tracks the evolution, architecture, and te
 - **[[Cross_Project_Network]]**: Links to all project AI maps.
 - **[[Admin_BusinessList]]**: Admin business listing flow and page structure.
 - **[[Admin_Location_Management]]**: Admin district/city logistics and coverage page.
+- **[[Admin_Business_Creation]]**: Admin premium profile onboarding and subscription wizard.
 - **[[Redux_Workflow]]**: Canonical process to add/update Redux state safely.
 - **[[Hydration_Mismatch_Fix]]**: SSR-safe persistence pattern.
 

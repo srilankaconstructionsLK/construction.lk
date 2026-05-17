@@ -134,4 +134,48 @@ export class BusinessService {
       throw error;
     }
   }
+
+  /**
+   * Create new business profile
+   */
+  static async createBusinessProfile(
+    supabase: SupabaseClient<Database>,
+    profile: Database["public"]["Tables"]["business_profiles"]["Insert"]
+  ): Promise<BusinessProfile> {
+    const { data, error } = await supabase
+      .from("business_profiles")
+      .insert(profile)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[BusinessService] Error creating business profile:", error);
+      throw error;
+    }
+
+    return data as unknown as BusinessProfile;
+  }
+
+  /**
+   * Get payment history for a business
+   */
+  static async getPaymentHistory(
+    supabase: any,
+    businessId: string
+  ): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('business_id', businessId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching payment history:', error);
+      return [];
+    }
+  }
 }
+

@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { LocationService, District } from "@/services/supabase/LocationService";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchLocationsAsync } from "@/redux/slices/locationSlice";
+import { revalidateLocationsAction } from "@/app/actions/revalidate";
 
 // Sub-components
 import { LocationManagementHeader } from "./location-management/LocationManagementHeader";
@@ -175,6 +176,7 @@ export function LocationManagement() {
       setIsPublishing(true);
       await LocationService.updateLocationsAggregation(districts, new Set(dirtyDistricts));
       dispatch(fetchLocationsAsync());
+      await revalidateLocationsAction();
       setDirtyDistricts(new Set());
       setHasUnsavedChanges(false);
       setInfo("success", "Location hierarchy published successfully.");
